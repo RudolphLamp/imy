@@ -7,7 +7,6 @@ import {
   Volume2, 
   Gamepad2, 
   Star, 
-  GraduationCap, 
   ArrowRight,
   Clock,
   Layers,
@@ -62,18 +61,6 @@ const COURSES = [
     students: '6.2k',
     duration: '4 Weeks',
     icon: Volume2
-  },
-  {
-    id: 'game',
-    title: 'Unreal Engine 5 Mechanics',
-    category: 'Game Dev',
-    categoryName: 'Game Development',
-    tagColor: '#f43f5e',
-    bgColor: 'rgba(244, 63, 94, 0.15)',
-    rating: '4.9',
-    students: '15.8k',
-    duration: '10 Weeks',
-    icon: Gamepad2
   }
 ];
 
@@ -82,8 +69,7 @@ const CATEGORIES = [
   { id: 'Motion', label: 'Motion' },
   { id: '3D', label: '3D Art' },
   { id: 'UX/UI', label: 'UX/UI' },
-  { id: 'Audio', label: 'Audio' },
-  { id: 'Game Dev', label: 'Game Dev' }
+  { id: 'Audio', label: 'Audio' }
 ];
 
 export default function HeroPanel() {
@@ -133,7 +119,7 @@ export default function HeroPanel() {
         <div className="catalog-header-container">
           <div className="catalog-title-row">
             <span className="catalog-section-badge">
-              <Sparkle size={14} /> FEATURED COURSES
+              <Sparkle size={13} /> FEATURED COURSES
             </span>
             <span className="catalog-count-badge">
               <strong>{filteredCourses.length}</strong> Programs Available
@@ -155,7 +141,7 @@ export default function HeroPanel() {
           </div>
         </div>
 
-        {/* Structured Grid of Larger Course Cards */}
+        {/* Structured 2-Column Compact Grid of Course Cards */}
         <div className="courses-grid">
           <AnimatePresence mode="popLayout">
             {filteredCourses.map((course) => {
@@ -169,23 +155,23 @@ export default function HeroPanel() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.25 }}
-                  whileHover={{ y: -5, borderColor: "rgba(99, 102, 241, 0.6)" }}
+                  whileHover={{ y: -3, borderColor: "rgba(99, 102, 241, 0.6)" }}
                   className="grid-course-card"
                   onClick={() => handleCourseClick(course.title)}
                 >
                   {/* Course Top Header */}
                   <div className="card-top-row">
                     <div className="card-icon-box" style={{ background: course.bgColor, color: course.tagColor }}>
-                      <IconComponent size={22} />
+                      <IconComponent size={18} />
                     </div>
                     
                     <div className="card-badges-group">
                       <span className="card-course-badge" style={{ color: course.tagColor, borderColor: course.tagColor }}>
-                        <Layers size={11} style={{ display: 'inline', marginRight: '3px' }} />
+                        <Layers size={10} style={{ display: 'inline', marginRight: '2px' }} />
                         Course
                       </span>
                       <span className="card-duration-badge">
-                        <Clock size={11} style={{ display: 'inline', marginRight: '3px' }} />
+                        <Clock size={10} style={{ display: 'inline', marginRight: '2px' }} />
                         {course.duration}
                       </span>
                     </div>
@@ -198,7 +184,7 @@ export default function HeroPanel() {
                     
                     <div className="card-meta-row">
                       <span className="star-icon-inline">
-                        <Star size={13} fill="#fbbf24" stroke="none" /> {course.rating}
+                        <Star size={11} fill="#fbbf24" stroke="none" /> {course.rating}
                       </span>
                       <span>•</span>
                       <span>{course.students} enrolled</span>
@@ -206,8 +192,8 @@ export default function HeroPanel() {
 
                     {/* View Course Action */}
                     <div className="card-action-link">
-                      <span>View Course Details</span>
-                      <ArrowRight size={14} />
+                      <span>View Course</span>
+                      <ArrowRight size={13} />
                     </div>
                   </div>
                 </motion.div>
@@ -222,24 +208,25 @@ export default function HeroPanel() {
       <div className="hero-stats-row">
         <div className="stat-box">
           <h4>240+</h4>
-          <p>Courses Available</p>
+          <p>Courses</p>
         </div>
         <div className="stat-box">
           <h4>50k+</h4>
-          <p>Active Students</p>
+          <p>Students</p>
         </div>
         <div className="stat-box">
           <h4>98%</h4>
           <p>Satisfaction</p>
         </div>
         <div className="stat-box">
-          <h4>4.8 <Star size={14} fill="#fbbf24" stroke="none" style={{ display: 'inline', verticalAlign: 'middle' }} /></h4>
-          <p>Avg Course Rating</p>
+          <h4>4.8 <Star size={13} fill="#fbbf24" stroke="none" style={{ display: 'inline', verticalAlign: 'middle' }} /></h4>
+          <p>Avg Rating</p>
         </div>
       </div>
 
     </div>
   );
 }
+
 
 
