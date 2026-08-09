@@ -2,7 +2,7 @@
 
 A modern, high-performance Web UI featuring an interactive Landing Page, Split-Screen Login Portal, and Centered Account Registration system for **Create.IT — Multimedia Trends & Design Academy**.
 
-Built for **IMY 320 (Project 1)** using React, Vite, Framer Motion, and modern Vanilla CSS design tokens.
+Built for **IMY 320 (Project 1)** using React, Vite, Framer Motion, and modern Vanilla CSS.
 
 ---
 
@@ -15,7 +15,7 @@ Built for **IMY 320 (Project 1)** using React, Vite, Framer Motion, and modern V
 
 - **Split-Screen Login Portal**:
   - Left showcase featuring a structured course catalog with category filters, ratings, and course details.
-  - Right login panel with Google SSO, validation feedback, toast notifications, and password recovery simulation.
+  - Right login panel with Google login, validation feedback, toast notifications, and password recovery simulation.
   - Locked 100vh viewport height designed for clean, zero-scrollbar presentation.
 
 - **Centered Registration View**:
