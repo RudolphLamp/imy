@@ -1,16 +1,86 @@
-# React + Vite
+# Create.IT — IMY 320 Project 1
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A modern, high-performance Web UI featuring an interactive Landing Page, Split-Screen Login Portal, and Centered Account Registration system for **Create.IT — Multimedia Trends & Design Academy**.
 
-Currently, two official plugins are available:
+Built for **IMY 320 (Project 1)** using React, Vite, Framer Motion, and modern Vanilla CSS design tokens.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Interactive Landing Page**: 
+  - Dynamic hero header with animated gradient typography.
+  - Featured course catalog showcase with interactive course category filtering.
+  - Academy benefits, stats counter, and call-to-action navigation.
 
-## Expanding the Oxlint configuration
+- **Split-Screen Login Portal**:
+  - Left showcase featuring a structured course catalog with category filters, ratings, and course details.
+  - Right login panel with Google SSO, validation feedback, toast notifications, and password recovery simulation.
+  - Locked 100vh viewport height designed for clean, zero-scrollbar presentation.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- **Centered Registration View**:
+  - Full user account signup form with validation, interactive switches, and navigation back to home.
+
+- **Design System & Aesthetics**:
+  - Dark mode glassmorphism UI with curated HSL color tokens (`#090a18`, `#6366f1`, `#38bdf8`, `#c084fc`).
+  - Fluid micro-interactions and transitions powered by Framer Motion.
+  - Google Fonts integration (*Plus Jakarta Sans* & *Outfit*).
+
+---
+
+## 🛠️ Technology Stack
+
+- **Framework**: React 18
+- **Build Tool**: Vite
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Styling**: Vanilla CSS3 (Custom Design Tokens & Glassmorphism Utilities)
+
+---
+
+## 🚀 How to Run the Project
+
+Follow these steps to run the application locally on your machine:
+
+### 1. Prerequisites
+Ensure you have [Node.js](https://nodejs.org/) (version 18+ recommended) and `npm` installed.
+
+### 2. Clone the Repository
+```bash
+git clone https://github.com/RudolphLamp/imy.git
+cd imy
+```
+
+### 3. Install Dependencies
+```bash
+npm install
+```
+
+### 4. Start the Development Server
+```bash
+npm run dev
+```
+
+Open your browser and navigate to `http://localhost:5173/` (or the local URL printed in your terminal).
+
+---
+
+## 📦 Building for Production
+
+To create an optimized production build:
+
+```bash
+npm run build
+```
+
+To preview the production build locally:
+
+```bash
+npm run preview
+```
+
+---
+
+## 📄 License & Credits
+
+Created by **RudolphLamp** for **IMY 320 (Project 1: Web UI Login Page & Landing Page)**.
