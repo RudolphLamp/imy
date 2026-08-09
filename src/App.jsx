@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import LandingPage from './components/LandingPage';
 import HeroPanel from './components/HeroPanel';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import HelpModal from './components/HelpModal';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, ArrowLeft } from 'lucide-react';
 
 export default function App() {
-  const [view, setView] = useState('login'); // 'login' or 'register'
+  const [view, setView] = useState('landing'); // 'landing', 'login', or 'register'
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -28,14 +29,24 @@ export default function App() {
       )}
 
       {/* Render Layout based on view */}
-      {view === 'login' ? (
-        /* SCREENSHOT 1: Split Screen Layout */
+      {view === 'landing' ? (
+        <LandingPage onNavigate={(targetView) => setView(targetView)} />
+      ) : view === 'login' ? (
+        /* Split Screen Login Layout */
         <div className="split-layout">
           {/* Left Hero Showcase */}
           <HeroPanel />
 
           {/* Right Login Form */}
           <div className="form-panel">
+            <button 
+              type="button" 
+              className="btn-back-home"
+              onClick={() => setView('landing')}
+              title="Return to home page"
+            >
+              <ArrowLeft size={14} /> Home
+            </button>
             <LoginForm 
               onSwitchToRegister={() => setView('register')}
               onShowToast={showToast}
@@ -43,8 +54,16 @@ export default function App() {
           </div>
         </div>
       ) : (
-        /* SCREENSHOT 2: Centered Register Layout */
+        /* Centered Register Layout */
         <div className="centered-layout">
+          <button 
+            type="button" 
+            className="btn-back-home-top"
+            onClick={() => setView('landing')}
+            title="Return to home page"
+          >
+            <ArrowLeft size={14} /> Back to Home
+          </button>
           <RegisterForm 
             onSwitchToLogin={() => setView('login')}
             onShowToast={showToast}
