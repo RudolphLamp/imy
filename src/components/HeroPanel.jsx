@@ -121,9 +121,6 @@ export default function HeroPanel() {
             <span className="catalog-section-badge">
               <Sparkle size={13} /> FEATURED COURSES
             </span>
-            <span className="catalog-count-badge">
-              <strong>{filteredCourses.length}</strong> Programs Available
-            </span>
           </div>
 
           {/* Category Filter Pills */}
