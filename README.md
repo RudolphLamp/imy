@@ -83,4 +83,4 @@ npm run preview
 
 ## 📄 License & Credits
 
-Created by **RudolphLamp** for **IMY 320 (Project 1: Web UI Login Page & Landing Page)**.
+Created  for **IMY 320 (Project 1: Web UI Login Page & Landing Page)**.
