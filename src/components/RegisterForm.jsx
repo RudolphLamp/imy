@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
-export default function RegisterForm({ onSwitchToLogin, onShowToast }) {
+export default function RegisterForm({ onSwitchToLogin, onShowToast, onRegisterSuccess }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,9 +30,16 @@ export default function RegisterForm({ onSwitchToLogin, onShowToast }) {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      onShowToast(`Account created for ${fullName}! Redirecting to login...`, 'success');
-      setTimeout(() => onSwitchToLogin(), 1000);
-    }, 800);
+      const user = {
+        name: fullName,
+        email: email,
+        isPro: true
+      };
+      onShowToast(`🎉 Account created! Welcome ${fullName}. Opening course catalog...`, 'success');
+      if (onRegisterSuccess) {
+        onRegisterSuccess(user);
+      }
+    }, 700);
   };
 
   return (
@@ -60,7 +67,7 @@ export default function RegisterForm({ onSwitchToLogin, onShowToast }) {
 
       {/* Header Title */}
       <h2 className="form-header-title">Create account</h2>
-      <p className="form-header-sub">Join 50,000+ multimedia creators</p>
+      <p className="form-header-sub">Join 50,000+ multimedia creators & start learning</p>
 
       {/* Form */}
       <form onSubmit={handleSubmit}>
@@ -110,10 +117,17 @@ export default function RegisterForm({ onSwitchToLogin, onShowToast }) {
         </div>
 
         <button type="submit" className="btn-submit-purple" disabled={isLoading}>
-          {isLoading ? 'Creating account...' : 'Create account'}
+          {isLoading ? 'Creating account & provisioning access...' : 'Create Account & Explore Products'}
         </button>
 
       </form>
+
+      <div className="switch-footer">
+        Already have an account?{' '}
+        <button type="button" onClick={onSwitchToLogin}>
+          Sign in
+        </button>
+      </div>
 
     </div>
   );

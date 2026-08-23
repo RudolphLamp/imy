@@ -4,16 +4,15 @@ import {
   Film, 
   Box, 
   Sparkles, 
-  Volume2, 
   Gamepad2, 
   Star, 
   ArrowRight, 
   ShieldCheck, 
   Zap, 
   Users, 
-  Award,
-  ChevronRight,
-  LogIn
+  Award, 
+  ChevronRight, 
+  LogIn 
 } from 'lucide-react';
 
 export default function LandingPage({ onNavigate }) {
@@ -89,7 +88,9 @@ export default function LandingPage({ onNavigate }) {
         </div>
 
         <nav className="landing-nav-links">
-          <a href="#courses">Courses</a>
+          <button type="button" className="nav-link-text-btn" onClick={() => onNavigate('products')}>
+            Courses Catalog
+          </button>
           <a href="#features">Features</a>
           <a href="#about">About</a>
         </nav>
@@ -107,9 +108,9 @@ export default function LandingPage({ onNavigate }) {
           <button 
             type="button" 
             className="btn-nav-register"
-            onClick={() => onNavigate('register')}
+            onClick={() => onNavigate('products')}
           >
-            <span>Get Started Free</span>
+            <span>Explore Courses</span>
             <ChevronRight size={15} />
           </button>
         </div>
@@ -141,9 +142,9 @@ export default function LandingPage({ onNavigate }) {
             <button 
               type="button" 
               className="btn-primary-glow"
-              onClick={() => onNavigate('register')}
+              onClick={() => onNavigate('products')}
             >
-              <span>Start Learning Free</span>
+              <span>Explore Course Catalog</span>
               <ArrowRight size={16} />
             </button>
 
@@ -194,7 +195,7 @@ export default function LandingPage({ onNavigate }) {
                 key={idx}
                 className="landing-course-card"
                 whileHover={{ y: -6, borderColor: 'rgba(99, 102, 241, 0.5)' }}
-                onClick={() => onNavigate('login')}
+                onClick={() => onNavigate('products')}
               >
                 <div className="card-top">
                   <div className="card-icon-box" style={{ background: course.bgColor, color: course.color }}>
@@ -214,7 +215,7 @@ export default function LandingPage({ onNavigate }) {
                 </div>
 
                 <div className="card-hover-action">
-                  <span>Enroll in Course</span>
+                  <span>View Product Details</span>
                   <ArrowRight size={14} />
                 </div>
               </motion.div>
@@ -247,6 +248,7 @@ export default function LandingPage({ onNavigate }) {
           <div className="brand-title">Create<span>.IT</span></div>
           <p>© 2026 Create.IT Multimedia Academy. All rights reserved.</p>
           <div className="footer-links">
+            <button type="button" onClick={() => onNavigate('products')}>Courses</button>
             <button type="button" onClick={() => onNavigate('login')}>Sign In</button>
             <button type="button" onClick={() => onNavigate('register')}>Register</button>
           </div>

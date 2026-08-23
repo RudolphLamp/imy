@@ -3,11 +3,20 @@ import LandingPage from './components/LandingPage';
 import HeroPanel from './components/HeroPanel';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
+import ProductsView from './components/products/ProductsView';
 import HelpModal from './components/HelpModal';
 import { HelpCircle, ArrowLeft } from 'lucide-react';
 
 export default function App() {
-  const [view, setView] = useState('landing'); // 'landing', 'login', or 'register'
+  const [view, setView] = useState('products'); // 'products', 'login', 'register', 'landing'
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('createit_user');
+      return saved ? JSON.parse(saved) : { name: 'Jane Smith', email: 'jane.smith@createit.academy', isPro: true };
+    } catch {
+      return { name: 'Jane Smith', email: 'jane.smith@createit.academy', isPro: true };
+    }
+  });
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -18,12 +27,28 @@ export default function App() {
     }, 4000);
   };
 
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('createit_user', JSON.stringify(user));
+    } catch {}
+    setView('products');
+  };
+
+  const handleRegisterSuccess = (user) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('createit_user', JSON.stringify(user));
+    } catch {}
+    setView('products');
+  };
+
   return (
     <div className="app-container">
       
       {/* Toast Notification Popup */}
       {toast && (
-        <div className="toast-msg">
+        <div className={`toast-msg ${toast.type === 'error' ? 'toast-error' : toast.type === 'success' ? 'toast-success' : ''}`}>
           {toast.message}
         </div>
       )}
@@ -31,6 +56,18 @@ export default function App() {
       {/* Render Layout based on view */}
       {view === 'landing' ? (
         <LandingPage onNavigate={(targetView) => setView(targetView)} />
+      ) : view === 'products' ? (
+        /* Full Products / Courses Experience */
+        <ProductsView 
+          user={currentUser}
+          onLogout={() => {
+            showToast('Signed out successfully.', 'info');
+            setView('login');
+          }}
+          onBackToHome={() => setView('landing')}
+          onShowToast={showToast}
+          onOpenHelpModal={() => setIsHelpModalOpen(true)}
+        />
       ) : view === 'login' ? (
         /* Split Screen Login Layout */
         <div className="split-layout">
@@ -50,6 +87,7 @@ export default function App() {
             <LoginForm 
               onSwitchToRegister={() => setView('register')}
               onShowToast={showToast}
+              onLoginSuccess={handleLoginSuccess}
             />
           </div>
         </div>
@@ -67,18 +105,21 @@ export default function App() {
           <RegisterForm 
             onSwitchToLogin={() => setView('login')}
             onShowToast={showToast}
+            onRegisterSuccess={handleRegisterSuccess}
           />
         </div>
       )}
 
       {/* Floating Bottom-Right Help (?) Button */}
-      <button 
-        className="help-floating-btn"
-        onClick={() => setIsHelpModalOpen(true)}
-        title="UX Project Information"
-      >
-        <HelpCircle size={18} />
-      </button>
+      {view !== 'products' && (
+        <button 
+          className="help-floating-btn"
+          onClick={() => setIsHelpModalOpen(true)}
+          title="UX Project Information"
+        >
+          <HelpCircle size={18} />
+        </button>
+      )}
 
       {/* Help Modal */}
       <HelpModal 

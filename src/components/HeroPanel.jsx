@@ -5,12 +5,11 @@ import {
   Box, 
   Sparkles, 
   Volume2, 
-  Gamepad2, 
   Star, 
-  ArrowRight,
-  Clock,
-  Layers,
-  Sparkle
+  ArrowRight, 
+  Clock, 
+  Layers, 
+  Sparkle 
 } from 'lucide-react';
 
 const COURSES = [
@@ -108,7 +107,7 @@ export default function HeroPanel() {
       <div className="hero-content">
         <h2 className="hero-headline">
           Create without <br />
-          <span className="gradient-text">limits.</span>
+          <span>limits.</span>
         </h2>
 
         <p className="hero-subtitle">
@@ -224,6 +223,3 @@ export default function HeroPanel() {
     </div>
   );
 }
-
-
-

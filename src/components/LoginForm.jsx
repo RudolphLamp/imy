@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 
-export default function LoginForm({ onSwitchToRegister, onShowToast }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function LoginForm({ onSwitchToRegister, onShowToast, onLoginSuccess }) {
+  const [email, setEmail] = useState('jane.smith@createit.academy');
+  const [password, setPassword] = useState('••••••••');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e) => {
@@ -19,12 +20,47 @@ export default function LoginForm({ onSwitchToRegister, onShowToast }) {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      onShowToast(`Signed in successfully as ${email}!`, 'success');
-    }, 800);
+      const namePart = email.split('@')[0].replace('.', ' ');
+      const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      const user = {
+        name: formattedName || 'Jane Smith',
+        email: email,
+        isPro: true
+      };
+      onShowToast(`Welcome back, ${user.name}! Accessing course catalog...`, 'success');
+      if (onLoginSuccess) {
+        onLoginSuccess(user);
+      }
+    }, 600);
   };
 
   const handleGoogleLogin = () => {
-    onShowToast('Google SSO Authentication initialized...', 'info');
+    setIsLoading(true);
+    onShowToast('Authenticating with Google SSO...', 'info');
+    setTimeout(() => {
+      setIsLoading(false);
+      const user = {
+        name: 'Alex Rivers',
+        email: 'alex.rivers@gmail.com',
+        isPro: true
+      };
+      onShowToast('Signed in with Google SSO successfully!', 'success');
+      if (onLoginSuccess) {
+        onLoginSuccess(user);
+      }
+    }, 700);
+  };
+
+  const handleGuestDemo = () => {
+    const user = {
+      name: 'IMY 320 Evaluator',
+      email: 'marker@up.ac.za',
+      isPro: true
+    };
+    onShowToast('Signed in as Guest Academic Evaluator!', 'success');
+    if (onLoginSuccess) {
+      onLoginSuccess(user);
+    }
   };
 
   return (
@@ -32,10 +68,10 @@ export default function LoginForm({ onSwitchToRegister, onShowToast }) {
       
       {/* Title & Subtitle */}
       <h2 className="form-header-title">Welcome back</h2>
-      <p className="form-header-sub">Sign in to continue learning</p>
+      <p className="form-header-sub">Sign in to explore & purchase multimedia courses</p>
 
       {/* Google SSO Button */}
-      <button type="button" className="btn-google" onClick={handleGoogleLogin}>
+      <button type="button" className="btn-google" onClick={handleGoogleLogin} disabled={isLoading}>
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
           <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
@@ -46,7 +82,7 @@ export default function LoginForm({ onSwitchToRegister, onShowToast }) {
       </button>
 
       {/* Divider */}
-      <div className="divider">or</div>
+      <div className="divider">or continue with email</div>
 
       {/* Login Form */}
       <form onSubmit={handleSubmit}>
@@ -67,7 +103,7 @@ export default function LoginForm({ onSwitchToRegister, onShowToast }) {
         <div className="input-group">
           <div className="input-label-row">
             <label className="input-label">Password</label>
-            <a href="#" className="link-forgot" onClick={(e) => { e.preventDefault(); onShowToast('Password reset link dispatched.', 'info'); }}>
+            <a href="#" className="link-forgot" onClick={(e) => { e.preventDefault(); onShowToast('Password reset instructions sent to your email.', 'info'); }}>
               Forgot?
             </a>
           </div>
@@ -81,7 +117,17 @@ export default function LoginForm({ onSwitchToRegister, onShowToast }) {
         </div>
 
         <button type="submit" className="btn-submit-purple" disabled={isLoading}>
-          {isLoading ? 'Signing in...' : 'Sign in to Create.IT'}
+          {isLoading ? 'Authenticating...' : 'Sign in to Products Page'}
+        </button>
+
+        {/* Quick Demo One-Click Access Button */}
+        <button 
+          type="button" 
+          className="btn-demo-quick-login"
+          onClick={handleGuestDemo}
+        >
+          <Sparkles size={14} color="#38bdf8" />
+          <span>Quick Demo Access (1-Click)</span>
         </button>
 
       </form>
