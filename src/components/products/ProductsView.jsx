@@ -14,7 +14,6 @@ import {
   CheckCircle2, 
   GraduationCap, 
   Sparkles, 
-  Flame, 
   Award, 
   CreditCard, 
   Plus, 
@@ -23,16 +22,13 @@ import {
   RotateCcw, 
   ChevronDown, 
   ChevronUp, 
-  Play, 
   Users, 
-  Tag, 
-  Lock, 
-  HelpCircle, 
   Wrench,
   ShieldCheck
 } from 'lucide-react';
 import { loadCourses } from '../../utils/csvLoader';
 import defaultHeroImg from '../../assets/hero.png';
+import CustomerExperience from './CustomerExperience';
 
 // Rich Category color accents
 const CATEGORY_COLORS = {
@@ -50,13 +46,26 @@ const CATEGORY_COLORS = {
   '2D Animation': { bg: 'rgba(45, 212, 191, 0.18)', text: '#2dd4bf', border: 'rgba(45, 212, 191, 0.4)' }
 };
 
-export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpModal }) {
+const readStoredList = (key) => {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+};
+
+export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast }) {
   const [courses, setCourses] = useState([]);
-  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog', 'dashboard', 'cart'
+  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('view') === 'customer' ? 'customer' : 'catalog');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [expandedCurriculums, setExpandedCurriculums] = useState({});
+  const [orders, setOrders] = useState(() => readStoredList('createit_orders'));
+  const [tickets, setTickets] = useState(() => readStoredList('createit_tickets'));
+  const [reviews, setReviews] = useState(() => readStoredList('createit_reviews'));
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   
   // Sort, Level & Price filters
   const [sortBy, setSortBy] = useState('popular'); // 'popular', 'price-asc', 'price-desc', 'rating', 'title'
@@ -103,6 +112,10 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
   useEffect(() => {
     localStorage.setItem('createit_enrolled', JSON.stringify(enrolled));
   }, [enrolled]);
+
+  useEffect(() => { localStorage.setItem('createit_orders', JSON.stringify(orders)); }, [orders]);
+  useEffect(() => { localStorage.setItem('createit_tickets', JSON.stringify(tickets)); }, [tickets]);
+  useEffect(() => { localStorage.setItem('createit_reviews', JSON.stringify(reviews)); }, [reviews]);
 
   // Unique categories derived dynamically from loaded courses
   const categories = useMemo(() => {
@@ -162,6 +175,10 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
   // Cart actions
   const handleToggleCart = (course, e) => {
     if (e) e.stopPropagation();
+    if (enrolled.some(item => item.courseId === course.id)) {
+      onShowToast?.('This course is already in My Learning.', 'info');
+      return;
+    }
     if (cart.some(item => item.id === course.id)) {
       setCart(cart.filter(item => item.id !== course.id));
       onShowToast?.(`Removed "${course.title}" from cart.`, 'info');
@@ -178,26 +195,37 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
+    const order = {
+      id: `CIT-${Date.now().toString().slice(-8)}`,
+      createdAt: new Date().toISOString(),
+      items: cart.map(({ id, title, price }) => ({ id, title, price })),
+      total: cart.reduce((sum, item) => sum + item.price, 0)
+    };
     const newEnrolled = [...enrolled];
     cart.forEach(item => {
       if (!newEnrolled.some(e => e.courseId === item.id)) {
-        newEnrolled.push({ courseId: item.id, progress: 15 });
+        newEnrolled.push({ courseId: item.id, progress: 0 });
       }
     });
     setEnrolled(newEnrolled);
+    setOrders(prev => [order, ...prev]);
     setCart([]);
-    setActiveTab('dashboard');
-    onShowToast?.('Checkout successful! Creative programs added to your dashboard.', 'success');
+    setCheckoutOpen(false);
+    setActiveTab('customer');
+    onShowToast?.(`Demo order ${order.id} complete. Your courses are ready.`, 'success');
   };
 
   const handleInstantEnroll = (course, e) => {
     if (e) e.stopPropagation();
-    if (!enrolled.some(e => e.courseId === course.id)) {
-      setEnrolled([...enrolled, { courseId: course.id, progress: 0 }]);
+    if (enrolled.some(item => item.courseId === course.id)) {
+      setActiveTab('dashboard');
+      setSelectedCourseId(null);
+      return;
     }
-    setActiveTab('dashboard');
+    if (!cart.some(item => item.id === course.id)) setCart(prev => [...prev, course]);
+    setActiveTab('cart');
     setSelectedCourseId(null);
-    onShowToast?.(`Successfully enrolled in "${course.title}"!`, 'success');
+    onShowToast?.(`"${course.title}" is ready for checkout.`, 'success');
   };
 
   // Progress actions
@@ -233,6 +261,7 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
   const cartTotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
   const completedCount = enrolled.filter(e => e.progress >= 100).length;
   const inProgressCount = enrolled.filter(e => e.progress < 100).length;
+  const totalModules = enrolled.reduce((sum, item) => sum + (courses.find(course => course.id === item.courseId)?.lessons?.length || 0), 0);
 
   return (
     <div className="sleek-app-root">
@@ -355,6 +384,15 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
               {enrolled.length > 0 && (
                 <span className="nav-count-pill">{enrolled.length}</span>
               )}
+            </button>
+
+            <button
+              type="button"
+              className={`sleek-nav-item ${activeTab === 'customer' ? 'active' : ''}`}
+              onClick={() => { setSelectedCourseId(null); setActiveTab('customer'); }}
+            >
+              <div className="nav-icon-wrap" style={{ color: '#fbbf24' }}><User size={16} /></div>
+              <span className="nav-text">Customer Experience</span>
             </button>
 
             <button 
@@ -583,14 +621,14 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
 
                   {/* Action Buttons */}
                   <div className="detail-action-buttons">
-                    <button 
+                    {!enrolled.some(item => item.courseId === selectedCourse.id) && <button
                       type="button" 
                       className={`btn-vibrant-cart-action ${cart.some(item => item.id === selectedCourse.id) ? 'in-cart' : ''}`}
                       onClick={(e) => handleToggleCart(selectedCourse, e)}
                     >
                       <ShoppingCart size={17} />
                       <span>{cart.some(item => item.id === selectedCourse.id) ? 'In Your Cart ✓' : 'Add to Cart (R' + selectedCourse.price.toFixed(2) + ')'}</span>
-                    </button>
+                    </button>}
 
                     <button 
                       type="button" 
@@ -598,7 +636,7 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
                       onClick={(e) => handleInstantEnroll(selectedCourse, e)}
                     >
                       <Check size={17} />
-                      <span>Instant Enroll & Begin</span>
+                      <span>{enrolled.some(item => item.courseId === selectedCourse.id) ? 'Go to My Learning' : 'Continue to Checkout'}</span>
                     </button>
                   </div>
 
@@ -881,11 +919,11 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
 
                 <div className="stat-card-glass stat-card-amber">
                   <div className="stat-icon-circle amber">
-                    <Flame size={20} />
+                    <Layers size={20} />
                   </div>
                   <div className="stat-text-box">
-                    <h3>12 Days</h3>
-                    <p>Study Streak</p>
+                    <h3>{totalModules}</h3>
+                    <p>Course Modules</p>
                   </div>
                 </div>
               </div>
@@ -960,6 +998,21 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
               </div>
 
             </div>
+          ) : activeTab === 'customer' ? (
+            <CustomerExperience
+              user={user}
+              onUpdateUser={onUpdateUser}
+              orders={orders}
+              tickets={tickets}
+              onAddTicket={(ticket) => setTickets(prev => [ticket, ...prev])}
+              reviews={reviews}
+              onAddReview={(review) => setReviews(prev => [review, ...prev])}
+              enrolled={enrolled}
+              courses={courses}
+              onOpenCourse={(id) => { setActiveTab('catalog'); setSelectedCourseId(id); }}
+              onOpenLearning={() => setActiveTab('dashboard')}
+              onShowToast={onShowToast}
+            />
           ) : activeTab === 'cart' ? (
             /* 4. Cart View */
             <div className="sleek-cart-container">
@@ -1009,10 +1062,10 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
                     <button 
                       type="button" 
                       className="btn-primary-emerald"
-                      onClick={handleCheckout}
+                      onClick={() => setCheckoutOpen(true)}
                     >
                       <CreditCard size={18} />
-                      <span>Complete Checkout & Enroll</span>
+                      <span>Review Checkout</span>
                     </button>
                   </div>
 
@@ -1041,6 +1094,18 @@ export default function ProductsView({ user, onLogout, onShowToast, onOpenHelpMo
         </main>
 
       </div>
+
+      {checkoutOpen && <div className="cx-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setCheckoutOpen(false); }}>
+        <div className="cx-checkout-modal" role="dialog" aria-modal="true" aria-labelledby="cx-checkout-title">
+          <span className="cx-section-kicker">FINAL STEP</span>
+          <h2 id="cx-checkout-title">Review your order</h2>
+          <p>Confirm this prototype checkout to add the courses to My Learning and create a receipt.</p>
+          <div className="cx-checkout-items">{cart.map(item => <div key={item.id}><span>{item.title}</span><strong>R{item.price.toFixed(2)}</strong></div>)}</div>
+          <div className="cx-checkout-total"><span>Total</span><strong>R{cartTotal.toFixed(2)}</strong></div>
+          <p className="cx-checkout-note"><ShieldCheck size={16} /> Demo only. No payment details or money are collected.</p>
+          <div className="cx-modal-actions"><button type="button" className="cx-secondary" onClick={() => setCheckoutOpen(false)}>Back to cart</button><button type="button" className="cx-primary" onClick={handleCheckout}>Confirm demo order <Check size={16} /></button></div>
+        </div>
+      </div>}
 
     </div>
   );
