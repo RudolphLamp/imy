@@ -22,6 +22,8 @@ import {
   RotateCcw, 
   ChevronDown, 
   ChevronUp, 
+  ChevronLeft, 
+  ChevronRight,
   Users, 
   Wrench,
   ShieldCheck
@@ -29,7 +31,11 @@ import {
 import { loadCourses } from '../../utils/csvLoader';
 import defaultHeroImg from '../../assets/hero.png';
 import CustomerExperience from './CustomerExperience';
+import EnrollmentCelebration from './EnrollmentCelebration';
+import CompletionModal from './CompletionModal';
+import CertificateModal from './CertificateModal';
 import { sampleOrders, sampleTickets, sampleReviews } from '../../data/customerMockData';
+import Footer from '../Footer';
 
 // Rich Category color accents
 const CATEGORY_COLORS = {
@@ -57,7 +63,7 @@ const readStoredList = (key, fallback = [], legacyKey = null) => {
   }
 };
 
-export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast }) {
+export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast, onNavigateView }) {
   const accountId = (user?.id || user?.email || 'demo-jane').toLowerCase();
   const storagePrefix = `createit_${encodeURIComponent(accountId)}_`;
   const legacyKey = (name) => accountId === 'jane.smith@createit.academy' ? `createit_${name}` : null;
@@ -71,7 +77,26 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
   const [tickets, setTickets] = useState(() => readStoredList(`${storagePrefix}tickets`, sampleTickets, legacyKey('tickets')));
   const [reviews, setReviews] = useState(() => readStoredList(`${storagePrefix}reviews`, sampleReviews, legacyKey('reviews')));
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [customerSection, setCustomerSection] = useState('overview');
   const [newOrderId, setNewOrderId] = useState(null);
+  const [celebrationOpen, setCelebrationOpen] = useState(false);
+  const [celebrationCourses, setCelebrationCourses] = useState([]);
+  const [completionCourseId, setCompletionCourseId] = useState(null);
+  const [progressBursts, setProgressBursts] = useState({});
+  const [certificateCourseId, setCertificateCourseId] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('createit_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('createit_sidebar_collapsed', String(sidebarCollapsed));
+    } catch {}
+  }, [sidebarCollapsed]);
   
   // Sort, Level & Price filters
   const [sortBy, setSortBy] = useState('popular'); // 'popular', 'price-asc', 'price-desc', 'rating', 'title'
@@ -188,6 +213,10 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
+
+    // Snapshot the cart before clearing it, so the celebration can use it
+    const purchasedCourses = [...cart];
+
     const order = {
       id: `CIT-${Date.now().toString().slice(-8)}`,
       createdAt: new Date().toISOString(),
@@ -205,8 +234,10 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     setNewOrderId(order.id);
     setCart([]);
     setCheckoutOpen(false);
-    setActiveTab('customer');
-    onShowToast?.(`Demo order ${order.id} complete. Your courses are ready.`, 'success');
+
+    // Show the celebration overlay instead of jumping straight to the customer hub
+    setCelebrationCourses(purchasedCourses);
+    setCelebrationOpen(true);
   };
 
   const handleInstantEnroll = (course, e) => {
@@ -222,16 +253,89 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     onShowToast?.(`"${course.title}" is ready for checkout.`, 'success');
   };
 
-  // Progress actions
+  const handleCelebrationStartLearning = () => {
+    setCelebrationOpen(false);
+    setCelebrationCourses([]);
+    setSelectedCourseId(null);
+    setActiveTab('dashboard');
+    onShowToast?.('Your learning dashboard is ready.', 'success');
+  };
+
+  const handleCelebrationClose = () => {
+    setCelebrationOpen(false);
+    setCelebrationCourses([]);
+    setSelectedCourseId(null);
+    setActiveTab('customer');
+    onShowToast?.('Your courses are ready. Scroll down to see your receipt.', 'info');
+  };
+
+  // Progress actions with milestone feedback
   const handleIncreaseProgress = (courseId) => {
+    const course = courses.find(c => c.id === courseId);
+    let newProgress = 0;
+    let previousProgress = 0;
+
     setEnrolled(prev => prev.map(item => {
       if (item.courseId === courseId) {
-        const next = Math.min(100, item.progress + 25);
-        return { ...item, progress: next };
+        previousProgress = item.progress;
+        newProgress = Math.min(100, item.progress + 25);
+        return { ...item, progress: newProgress };
       }
       return item;
     }));
-    onShowToast?.('Lesson completed (+25% progress)!', 'success');
+
+    // Trigger the floating +25% badge
+    setProgressBursts(prev => ({
+      ...prev,
+      [courseId]: { amount: 25, key: Date.now() }
+    }));
+
+    // Clean up the burst after the animation finishes
+    setTimeout(() => {
+      setProgressBursts(prev => {
+        const next = { ...prev };
+        delete next[courseId];
+        return next;
+      });
+    }, 1200);
+
+    // Milestone-specific feedback
+    if (newProgress >= 100) {
+      // Fire the completion modal (once per course, on reaching 100)
+      if (previousProgress < 100) {
+        setCompletionCourseId(courseId);
+      }
+      onShowToast?.(
+        course ? `Course complete: ${course.title}` : 'Course complete!',
+        'success'
+      );
+    } else if (newProgress === 75) {
+      onShowToast?.('Almost there! 75% complete.', 'success');
+    } else if (newProgress === 50) {
+      onShowToast?.('Halfway there! 50% complete.', 'success');
+    } else if (newProgress === 25) {
+      onShowToast?.('First milestone! 25% complete.', 'success');
+    } else {
+      onShowToast?.(`Progress updated to ${newProgress}%.`, 'success');
+    }
+  };
+
+  const handleCloseCompletion = () => {
+    setCompletionCourseId(null);
+  };
+
+  const handleClaimCertificate = () => {
+    const courseId = completionCourseId;
+    setCompletionCourseId(null);
+    setCertificateCourseId(courseId);
+  };
+
+  const handleOpenCertificate = (courseId) => {
+    setCertificateCourseId(courseId);
+  };
+
+  const handleCloseCertificate = () => {
+    setCertificateCourseId(null);
   };
 
   const toggleCurriculumAccordion = (courseId, e) => {
@@ -250,6 +354,22 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     setSearchQuery('');
   };
 
+  const handleTagCategoryClick = (category, e) => {
+    if (e) e.stopPropagation();
+    setSelectedCourseId(null);
+    setSelectedCategory(category);
+    setSearchQuery('');
+    setActiveTab('catalog');
+  };
+
+  const handleTagToolClick = (tool, e) => {
+    if (e) e.stopPropagation();
+    setSelectedCourseId(null);
+    setSelectedCategory('All');
+    setSearchQuery(tool);
+    setActiveTab('catalog');
+  };
+
   const hasActiveFilters = selectedCategory !== 'All' || sortBy !== 'popular' || levelFilter !== 'all' || priceFilter !== 'all' || searchQuery.trim() !== '';
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
@@ -263,14 +383,27 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
       {/* Floating Top Navbar */}
       <header className="sleek-floating-top-nav">
         
-        {/* Brand */}
-        <div className="navbar-left-brand" onClick={() => { setActiveTab('catalog'); setSelectedCourseId(null); }}>
-          <div className="brand-icon-gem">
-            <Sparkles size={18} color="#ffffff" />
+        {/* Brand + Sidebar toggle */}
+        <div className="navbar-left-group">
+          <button
+            type="button"
+            className="sidebar-toggle-btn"
+            onClick={() => setSidebarCollapsed(prev => !prev)}
+            title={sidebarCollapsed ? 'Open navigation' : 'Collapse navigation'}
+            aria-label={sidebarCollapsed ? 'Open navigation' : 'Collapse navigation'}
+            aria-expanded={!sidebarCollapsed}
+          >
+            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+
+          <div className="navbar-left-brand" onClick={() => { setActiveTab('catalog'); setSelectedCourseId(null); }}>
+            <div className="brand-icon-gem">
+              <Sparkles size={18} color="#ffffff" />
+            </div>
+            <h2 className="brand-logo-text">
+              Create<span>.IT</span>
+            </h2>
           </div>
-          <h2 className="brand-logo-text">
-            Create<span>.IT</span>
-          </h2>
         </div>
 
         {/* Global Live Search Bar */}
@@ -342,7 +475,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
       <div className="sleek-workspace-body">
         
         {/* Floating Side Navigation */}
-        <aside className="sleek-floating-sidebar">
+        <aside className={`sleek-floating-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
           
           {/* Navigation Menu */}
           <div className="sidebar-nav-section">
@@ -542,12 +675,15 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                       const colorDef = CATEGORY_COLORS[selectedCourse.category] || { bg: 'rgba(99, 102, 241, 0.2)', text: '#818cf8', border: '#6366f1' };
                       return (
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                          <span 
-                            className="detail-cat-pill" 
+                          <button
+                            type="button"
+                            className="detail-cat-pill interactive-tag"
                             style={{ backgroundColor: colorDef.bg, color: colorDef.text, borderColor: colorDef.border }}
+                            onClick={(e) => handleTagCategoryClick(selectedCourse.category, e)}
+                            title={`Filter by ${selectedCourse.category}`}
                           >
                             {selectedCourse.category}
-                          </span>
+                          </button>
                           {selectedCourse.badge && (
                             <span className="list-row-badge-pill">
                               <Sparkles size={11} /> {selectedCourse.badge}
@@ -602,10 +738,17 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                       <h3>Software & Technologies Covered</h3>
                       <div className="list-tools-cluster" style={{ marginTop: '8px' }}>
                         {selectedCourse.tools.map((tool, idx) => (
-                          <span key={idx} className="list-tool-chip" style={{ fontSize: '12px', padding: '4px 10px' }}>
+                          <button
+                            key={idx}
+                            type="button"
+                            className="list-tool-chip interactive-tag"
+                            style={{ fontSize: '12px', padding: '4px 10px' }}
+                            onClick={(e) => handleTagToolClick(tool, e)}
+                            title={`Search for ${tool}`}
+                          >
                             <Wrench size={11} style={{ display: 'inline', marginRight: '4px' }} />
                             {tool}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -732,12 +875,15 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                               e.target.src = defaultHeroImg;
                             }}
                           />
-                          <span 
-                            className="list-row-cat-tag"
+                          <button
+                            type="button"
+                            className="list-row-cat-tag interactive-tag"
                             style={{ backgroundColor: colorDef.bg, color: colorDef.text, borderColor: colorDef.border }}
+                            onClick={(e) => handleTagCategoryClick(course.category, e)}
+                            title={`Filter by ${course.category}`}
                           >
                             {course.category}
-                          </span>
+                          </button>
                           <span className="list-row-duration-pill">
                             <Clock size={10} /> {course.duration}
                           </span>
@@ -768,9 +914,15 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                           {course.tools && course.tools.length > 0 && (
                             <div className="list-tools-cluster">
                               {course.tools.map((tool, tIdx) => (
-                                <span key={tIdx} className="list-tool-chip">
+                                <button
+                                  key={tIdx}
+                                  type="button"
+                                  className="list-tool-chip interactive-tag"
+                                  onClick={(e) => handleTagToolClick(tool, e)}
+                                  title={`Search for ${tool}`}
+                                >
                                   {tool}
-                                </span>
+                                </button>
                               ))}
                             </div>
                           )}
@@ -943,8 +1095,13 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                     if (!course) return null;
                     const colorDef = CATEGORY_COLORS[course.category] || { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' };
 
+                    const burst = progressBursts[item.courseId];
+
                     return (
-                      <div key={item.courseId} className="enrolled-item-card">
+                      <div
+                        key={item.courseId}
+                        className={`enrolled-item-card ${burst ? 'just-updated' : ''}`}
+                      >
                         <img src={course.image || defaultHeroImg} alt={course.title} className="enrolled-thumb-rounded" />
                         
                         <div className="enrolled-details-pane">
@@ -963,10 +1120,10 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                             </div>
                           </div>
 
-                          {/* Progress Bar with Gradient */}
+                          {/* Progress Bar with Gradient, milestone markers, and update burst */}
                           <div className="enrolled-progressbar-track">
                             <div 
-                              className="enrolled-progressbar-fill" 
+                              className={`enrolled-progressbar-fill ${burst ? 'is-updating' : ''}`}
                               style={{ 
                                 width: `${item.progress}%`,
                                 background: item.progress >= 100 
@@ -974,6 +1131,25 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                                   : 'linear-gradient(90deg, #6366f1, #38bdf8)'
                               }} 
                             />
+
+                            {/* Milestone markers at 25, 50, 75 */}
+                            {[25, 50, 75].map(milestone => (
+                              <span
+                                key={milestone}
+                                className={`progress-milestone-badge ${item.progress >= milestone ? 'is-reached' : ''}`}
+                                style={{ left: `${milestone}%` }}
+                                aria-hidden="true"
+                              >
+                                {item.progress >= milestone ? '✓' : ''}
+                              </span>
+                            ))}
+
+                            {/* Floating +25% badge */}
+                            {burst && (
+                              <span key={burst.key} className="progress-burst">
+                                +{burst.amount}%
+                              </span>
+                            )}
                           </div>
 
                           {/* Actions */}
@@ -985,6 +1161,17 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                             >
                               {item.progress >= 100 ? 'Review Course Material ✓' : 'Complete Next Lesson (+25%)'}
                             </button>
+
+                            {item.progress >= 100 && (
+                              <button 
+                                type="button" 
+                                className="btn-view-certificate"
+                                onClick={() => handleOpenCertificate(item.courseId)}
+                              >
+                                <Award size={14} />
+                                View Certificate
+                              </button>
+                            )}
 
                             <button 
                               type="button" 
@@ -1021,6 +1208,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
               onShowToast={onShowToast}
               newOrderId={newOrderId}
               onDismissOrder={() => setNewOrderId(null)}
+              initialSection={customerSection}
             />
           ) : activeTab === 'cart' ? (
             /* 4. Cart View */
@@ -1100,6 +1288,22 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
             </div>
           ) : null}
 
+        <Footer
+          onNavigate={(target) => {
+            if (target === 'login' || target === 'landing' || target === 'register') {
+              onNavigateView?.(target);
+            } else {
+              setSelectedCourseId(null);
+              setActiveTab('catalog');
+            }
+          }}
+          onNavigateToTab={(tab, section) => {
+            setSelectedCourseId(null);
+            setActiveTab(tab);
+            if (section) setCustomerSection(section);
+          }}
+        />
+
         </main>
 
       </div>
@@ -1115,6 +1319,29 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
           <div className="cx-modal-actions"><button type="button" className="cx-secondary" onClick={() => setCheckoutOpen(false)}>Back to cart</button><button type="button" className="cx-primary" onClick={handleCheckout}>Confirm demo order <Check size={16} /></button></div>
         </div>
       </div>}
+
+      <EnrollmentCelebration
+        isOpen={celebrationOpen}
+        enrolledCourses={celebrationCourses}
+        orderId={newOrderId}
+        onStartLearning={handleCelebrationStartLearning}
+        onClose={handleCelebrationClose}
+      />
+
+      <CompletionModal
+        isOpen={!!completionCourseId}
+        course={courses.find(c => c.id === completionCourseId)}
+        onClaimCertificate={handleClaimCertificate}
+        onClose={handleCloseCompletion}
+      />
+
+      <CertificateModal
+        isOpen={!!certificateCourseId}
+        course={courses.find(c => c.id === certificateCourseId)}
+        user={user}
+        onClose={handleCloseCertificate}
+        onShowToast={onShowToast}
+      />
 
     </div>
   );

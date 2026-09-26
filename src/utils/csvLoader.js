@@ -1,4 +1,23 @@
 import defaultHeroImg from '../assets/hero.png';
+/**
+ * Curated Unsplash images per course ID.
+ * Each course gets a distinct, topical photo instead of the shared hero image.
+ * Falls back to defaultHeroImg if a course ID isn't mapped.
+ */
+const COURSE_IMAGES = {
+  '1': 'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=800&q=80',
+  '2': 'https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?auto=format&fit=crop&w=800&q=80',
+  '3': 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=800&q=80',
+  '4': 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=800&q=80',
+  '5': 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80',
+  '6': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+  '7': 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80',
+  '8': 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=800&q=80',
+  '9': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+  '10': 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80',
+  '11': 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80',
+  '12': 'https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&w=800&q=80'
+};
 
 export const FALLBACK_CSV = `id,title,category,price,duration,instructor,rating,description,lessons,tools,level,students,image,badge
 1,"Cinema 4D & After Effects: Motion Graphics","Motion Graphics",750.00,"6 Weeks","Elena Rostova",4.9,"Learn kinetic typography, 3D camera tracking, and commercial broadcast animation workflows.","Module 1: Kinetic Timing & Graph Editors;Module 2: Cinema 4D MoGraph;Module 3: Redshift Shaders & Lighting;Module 4: After Effects Compositing","Cinema 4D;After Effects;Redshift","Intermediate","14.8k","/assets/hero.png","Popular"
@@ -99,8 +118,7 @@ export function parseCoursesCSV(csvText) {
       tools,
       level,
       students,
-      studentsCount: students,
-      image: defaultHeroImg, // Use the same image across all items as requested
+      image: COURSE_IMAGES[String(id)] || defaultHeroImg,
       badge
     });
   }

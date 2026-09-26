@@ -15,8 +15,15 @@ const faqItems = [
 
 const formatDate = (date) => new Intl.DateTimeFormat('en-ZA', { dateStyle: 'medium' }).format(new Date(date));
 
-export default function CustomerExperience({ user, onUpdateUser, orders, tickets, onAddTicket, reviews, onAddReview, enrolled, courses, onOpenCourse, onOpenLearning, onExploreCatalog, onLoadDemoData, onShowToast, newOrderId, onDismissOrder }) {
-  const [section, setSection] = useState('overview');
+export default function CustomerExperience({ user, onUpdateUser, orders, tickets, onAddTicket, reviews, onAddReview, enrolled, courses, onOpenCourse, onOpenLearning, onExploreCatalog, onLoadDemoData, onShowToast, newOrderId, onDismissOrder, initialSection }) {
+  const [section, setSection] = useState(initialSection || 'overview');
+
+  useEffect(() => {
+    if (initialSection && initialSection !== section) {
+      setSection(initialSection);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSection]);
   const [profileName, setProfileName] = useState(user?.name || '');
   const [profileEmail, setProfileEmail] = useState(user?.email || '');
   const [topic, setTopic] = useState('Course access');
