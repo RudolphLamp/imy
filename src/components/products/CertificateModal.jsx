@@ -3,8 +3,10 @@ import {
   X, 
   Award, 
   Download,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { launchConfetti } from '../../utils/confetti';
 
 export default function CertificateModal({ 
@@ -17,6 +19,7 @@ export default function CertificateModal({
   const canvasRef = useRef(null);
   const cleanupRef = useRef(null);
   const [showContent, setShowContent] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Fire confetti + animate content when the modal opens
   useEffect(() => {
@@ -59,8 +62,59 @@ export default function CertificateModal({
 
   const certId = `UP-IMY320-${course.id.toUpperCase()}-2026`;
 
-  const handleDownload = () => {
-    onShowToast('Official PDF Certificate downloaded to your downloads folder!', 'success');
+  const handleDownload = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    try {
+      // Wait a frame for any pending layout/animation to settle
+      await new Promise(resolve => setTimeout(resolve, 60));
+
+      const frame = document.querySelector('.cert-inner-frame');
+      if (!frame) {
+        onShowToast('Certificate not ready. Please try again.', 'error');
+        setIsDownloading(false);
+        return;
+      }
+
+      // Give html2canvas the full node, not the scrolled/clipped viewport version.
+      // scale: 2 doubles resolution for a crisp image.
+      const canvas = await html2canvas(frame, {
+        backgroundColor: '#0e1022',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        windowWidth: frame.scrollWidth,
+        windowHeight: frame.scrollHeight,
+      });
+
+      await new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Failed to create image blob'));
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `CreateIT-Certificate-${course.id.toUpperCase()}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          // Delay revoke so the download can start
+          setTimeout(() => URL.revokeObjectURL(url), 500);
+          resolve();
+        }, 'image/png');
+      });
+
+      onShowToast('Certificate downloaded as PNG.', 'success');
+    } catch (err) {
+      console.error('Certificate download failed:', err);
+      onShowToast('Could not generate the certificate image. Please try again.', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -92,9 +146,23 @@ export default function CertificateModal({
           </div>
 
           <div className="cert-top-actions">
-            <button type="button" className="btn-cert-action" onClick={handleDownload}>
-              <Download size={15} />
-              <span>Download PDF</span>
+            <button 
+              type="button" 
+              className="btn-cert-action" 
+              onClick={handleDownload}
+              disabled={isDownloading}
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 size={15} className="cert-download-spinner" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={15} />
+                  <span>Download</span>
+                </>
+              )}
             </button>
             <button type="button" className="btn-cert-close" onClick={onClose}>
               <X size={16} />

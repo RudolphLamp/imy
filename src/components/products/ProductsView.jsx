@@ -33,6 +33,7 @@ import defaultHeroImg from '../../assets/hero.png';
 import CustomerExperience from './CustomerExperience';
 import EnrollmentCelebration from './EnrollmentCelebration';
 import CompletionModal from './CompletionModal';
+import CertificateModal from './CertificateModal';
 import { sampleOrders, sampleTickets, sampleReviews } from '../../data/customerMockData';
 import Footer from '../Footer';
 
@@ -82,6 +83,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
   const [celebrationCourses, setCelebrationCourses] = useState([]);
   const [completionCourseId, setCompletionCourseId] = useState(null);
   const [progressBursts, setProgressBursts] = useState({});
+  const [certificateCourseId, setCertificateCourseId] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem('createit_sidebar_collapsed') === 'true';
@@ -325,11 +327,15 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
   const handleClaimCertificate = () => {
     const courseId = completionCourseId;
     setCompletionCourseId(null);
-    // Open the certificate view (jumps to customer tab, reviews section allows
-    // a natural path; or navigate to detail page and use certificate modal)
-    setSelectedCourseId(courseId);
-    setActiveTab('catalog');
-    onShowToast?.('Scroll to your enrolled courses to claim your certificate.', 'info');
+    setCertificateCourseId(courseId);
+  };
+
+  const handleOpenCertificate = (courseId) => {
+    setCertificateCourseId(courseId);
+  };
+
+  const handleCloseCertificate = () => {
+    setCertificateCourseId(null);
   };
 
   const toggleCurriculumAccordion = (courseId, e) => {
@@ -1156,6 +1162,17 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                               {item.progress >= 100 ? 'Review Course Material ✓' : 'Complete Next Lesson (+25%)'}
                             </button>
 
+                            {item.progress >= 100 && (
+                              <button 
+                                type="button" 
+                                className="btn-view-certificate"
+                                onClick={() => handleOpenCertificate(item.courseId)}
+                              >
+                                <Award size={14} />
+                                View Certificate
+                              </button>
+                            )}
+
                             <button 
                               type="button" 
                               className="btn-progress-view-info"
@@ -1316,6 +1333,14 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
         course={courses.find(c => c.id === completionCourseId)}
         onClaimCertificate={handleClaimCertificate}
         onClose={handleCloseCompletion}
+      />
+
+      <CertificateModal
+        isOpen={!!certificateCourseId}
+        course={courses.find(c => c.id === certificateCourseId)}
+        user={user}
+        onClose={handleCloseCertificate}
+        onShowToast={onShowToast}
       />
 
     </div>

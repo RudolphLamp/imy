@@ -7826,3 +7826,13 @@ button.detail-cat-pill {
     height: 46px;
   }
 }
+
+/* Certificate download spinner */
+.cert-download-spinner {
+  animation: certSpinnerSpin 0.9s linear infinite;
+}
+
+@keyframes certSpinnerSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

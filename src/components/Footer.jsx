@@ -98,7 +98,7 @@ export default function Footer({ onNavigate, onNavigateToTab }) {
             © 2026 Create.IT Academy - IMY 320 prototype. Not an official University of Pretoria service.
           </p>
           <p className="footer-attribution">
-            Built with React 19 · Vite · Lucide Icons · Framer Motion · Google Fonts (Plus Jakarta Sans &amp; Outfit).
+            Built with React 19 · Vite · Lucide Icons · Framer Motion · html2canvas · Google Fonts (Plus Jakarta Sans &amp; Outfit).
           </p>
         </div>
       </div>
