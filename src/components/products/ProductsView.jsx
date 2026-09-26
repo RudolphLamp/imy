@@ -22,6 +22,8 @@ import {
   RotateCcw, 
   ChevronDown, 
   ChevronUp, 
+  ChevronLeft, 
+  ChevronRight,
   Users, 
   Wrench,
   ShieldCheck
@@ -74,6 +76,19 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [customerSection, setCustomerSection] = useState('overview');
   const [newOrderId, setNewOrderId] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('createit_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('createit_sidebar_collapsed', String(sidebarCollapsed));
+    } catch {}
+  }, [sidebarCollapsed]);
   
   // Sort, Level & Price filters
   const [sortBy, setSortBy] = useState('popular'); // 'popular', 'price-asc', 'price-desc', 'rating', 'title'
@@ -281,14 +296,27 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
       {/* Floating Top Navbar */}
       <header className="sleek-floating-top-nav">
         
-        {/* Brand */}
-        <div className="navbar-left-brand" onClick={() => { setActiveTab('catalog'); setSelectedCourseId(null); }}>
-          <div className="brand-icon-gem">
-            <Sparkles size={18} color="#ffffff" />
+        {/* Brand + Sidebar toggle */}
+        <div className="navbar-left-group">
+          <button
+            type="button"
+            className="sidebar-toggle-btn"
+            onClick={() => setSidebarCollapsed(prev => !prev)}
+            title={sidebarCollapsed ? 'Open navigation' : 'Collapse navigation'}
+            aria-label={sidebarCollapsed ? 'Open navigation' : 'Collapse navigation'}
+            aria-expanded={!sidebarCollapsed}
+          >
+            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+
+          <div className="navbar-left-brand" onClick={() => { setActiveTab('catalog'); setSelectedCourseId(null); }}>
+            <div className="brand-icon-gem">
+              <Sparkles size={18} color="#ffffff" />
+            </div>
+            <h2 className="brand-logo-text">
+              Create<span>.IT</span>
+            </h2>
           </div>
-          <h2 className="brand-logo-text">
-            Create<span>.IT</span>
-          </h2>
         </div>
 
         {/* Global Live Search Bar */}
@@ -360,7 +388,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
       <div className="sleek-workspace-body">
         
         {/* Floating Side Navigation */}
-        <aside className="sleek-floating-sidebar">
+        <aside className={`sleek-floating-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
           
           {/* Navigation Menu */}
           <div className="sidebar-nav-section">
