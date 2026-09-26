@@ -120,7 +120,7 @@ export async function loadCourses() {
     const text = await response.text();
     const parsed = parseCoursesCSV(text);
     return parsed.length > 0 ? parsed : parseCoursesCSV(FALLBACK_CSV);
-  } catch (err) {
+  } catch {
     return parseCoursesCSV(FALLBACK_CSV);
   }
 }

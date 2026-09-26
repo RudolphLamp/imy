@@ -48,7 +48,7 @@ export default function App() {
       
       {/* Toast Notification Popup */}
       {toast && (
-        <div className={`toast-msg ${toast.type === 'error' ? 'toast-error' : toast.type === 'success' ? 'toast-success' : ''}`}>
+        <div role="status" aria-live="polite" className={`toast-msg ${toast.type === 'error' ? 'toast-error' : toast.type === 'success' ? 'toast-success' : ''}`}>
           {toast.message}
         </div>
       )}
@@ -60,13 +60,16 @@ export default function App() {
         /* Full Products / Courses Experience */
         <ProductsView 
           user={currentUser}
+          onUpdateUser={(updatedUser) => {
+            setCurrentUser(updatedUser);
+            localStorage.setItem('createit_user', JSON.stringify(updatedUser));
+          }}
           onLogout={() => {
             showToast('Signed out successfully.', 'info');
             setView('login');
           }}
           onBackToHome={() => setView('landing')}
           onShowToast={showToast}
-          onOpenHelpModal={() => setIsHelpModalOpen(true)}
         />
       ) : view === 'login' ? (
         /* Split Screen Login Layout */
