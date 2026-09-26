@@ -14,6 +14,7 @@ import {
   ChevronRight, 
   LogIn 
 } from 'lucide-react';
+import Footer from './Footer';
 
 export default function LandingPage({ onNavigate }) {
   const courses = [
@@ -243,17 +244,10 @@ export default function LandingPage({ onNavigate }) {
       </section>
 
       {/* Footer */}
-      <footer className="landing-footer">
-        <div className="footer-content">
-          <div className="brand-title">Create<span>.IT</span></div>
-          <p>© 2026 Create.IT Multimedia Academy. All rights reserved.</p>
-          <div className="footer-links">
-            <button type="button" onClick={() => onNavigate('products')}>Courses</button>
-            <button type="button" onClick={() => onNavigate('login')}>Sign In</button>
-            <button type="button" onClick={() => onNavigate('register')}>Register</button>
-          </div>
-        </div>
-      </footer>
+      <Footer
+        onNavigate={onNavigate}
+        onNavigateToTab={(tab) => onNavigate('products')}
+      />
     </div>
   );
 }

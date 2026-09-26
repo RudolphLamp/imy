@@ -30,6 +30,7 @@ import { loadCourses } from '../../utils/csvLoader';
 import defaultHeroImg from '../../assets/hero.png';
 import CustomerExperience from './CustomerExperience';
 import { sampleOrders, sampleTickets, sampleReviews } from '../../data/customerMockData';
+import Footer from '../Footer';
 
 // Rich Category color accents
 const CATEGORY_COLORS = {
@@ -1099,6 +1100,11 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
 
             </div>
           ) : null}
+
+         <Footer
+          onNavigate={(target) => { setSelectedCourseId(null); setActiveTab('catalog'); }}
+          onNavigateToTab={(tab) => { setSelectedCourseId(null); setActiveTab(tab); }}
+        />
 
         </main>
 
