@@ -58,7 +58,7 @@ const readStoredList = (key, fallback = [], legacyKey = null) => {
   }
 };
 
-export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast }) {
+export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast, onNavigateView }) {
   const accountId = (user?.id || user?.email || 'demo-jane').toLowerCase();
   const storagePrefix = `createit_${encodeURIComponent(accountId)}_`;
   const legacyKey = (name) => accountId === 'jane.smith@createit.academy' ? `createit_${name}` : null;
@@ -72,6 +72,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
   const [tickets, setTickets] = useState(() => readStoredList(`${storagePrefix}tickets`, sampleTickets, legacyKey('tickets')));
   const [reviews, setReviews] = useState(() => readStoredList(`${storagePrefix}reviews`, sampleReviews, legacyKey('reviews')));
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [customerSection, setCustomerSection] = useState('overview');
   const [newOrderId, setNewOrderId] = useState(null);
   
   // Sort, Level & Price filters
@@ -1022,6 +1023,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
               onShowToast={onShowToast}
               newOrderId={newOrderId}
               onDismissOrder={() => setNewOrderId(null)}
+              initialSection={customerSection}
             />
           ) : activeTab === 'cart' ? (
             /* 4. Cart View */
@@ -1101,9 +1103,20 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
             </div>
           ) : null}
 
-         <Footer
-          onNavigate={(target) => { setSelectedCourseId(null); setActiveTab('catalog'); }}
-          onNavigateToTab={(tab) => { setSelectedCourseId(null); setActiveTab(tab); }}
+        <Footer
+          onNavigate={(target) => {
+            if (target === 'login' || target === 'landing' || target === 'register') {
+              onNavigateView?.(target);
+            } else {
+              setSelectedCourseId(null);
+              setActiveTab('catalog');
+            }
+          }}
+          onNavigateToTab={(tab, section) => {
+            setSelectedCourseId(null);
+            setActiveTab(tab);
+            if (section) setCustomerSection(section);
+          }}
         />
 
         </main>

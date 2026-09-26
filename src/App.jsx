@@ -60,7 +60,6 @@ export default function App() {
       {view === 'landing' ? (
         <LandingPage onNavigate={(targetView) => setView(targetView)} />
       ) : view === 'products' ? (
-        /* Full Products / Courses Experience */
         <ProductsView 
           user={currentUser}
           onUpdateUser={(updatedUser) => {
@@ -73,6 +72,7 @@ export default function App() {
           }}
           onBackToHome={() => setView('landing')}
           onShowToast={showToast}
+          onNavigateView={(targetView) => setView(targetView)}
         />
       ) : view === 'login' ? (
         /* Split Screen Login Layout */

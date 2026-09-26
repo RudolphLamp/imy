@@ -66,7 +66,7 @@ export default function Footer({ onNavigate, onNavigateToTab }) {
           <h4 className="footer-col-title">Support</h4>
           <ul className="footer-link-list">
             <li>
-              <button type="button" onClick={() => handleTab('customer')}>
+              <button type="button" onClick={() => onNavigateToTab?.('customer', 'support')}>
                 <HelpCircle size={14} /> Help &amp; FAQs
               </button>
             </li>
@@ -76,7 +76,13 @@ export default function Footer({ onNavigate, onNavigateToTab }) {
               </button>
             </li>
             <li>
-              <button type="button" onClick={() => handleNav('landing')}>
+              <button
+                type="button"
+                onClick={() => {
+                  handleNav('landing');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
                 <Heart size={14} /> About Create.IT
               </button>
             </li>
