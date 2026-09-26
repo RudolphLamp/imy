@@ -32,6 +32,7 @@ import { loadCourses } from '../../utils/csvLoader';
 import defaultHeroImg from '../../assets/hero.png';
 import CustomerExperience from './CustomerExperience';
 import EnrollmentCelebration from './EnrollmentCelebration';
+import CompletionModal from './CompletionModal';
 import { sampleOrders, sampleTickets, sampleReviews } from '../../data/customerMockData';
 import Footer from '../Footer';
 
@@ -79,6 +80,8 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
   const [newOrderId, setNewOrderId] = useState(null);
   const [celebrationOpen, setCelebrationOpen] = useState(false);
   const [celebrationCourses, setCelebrationCourses] = useState([]);
+  const [completionCourseId, setCompletionCourseId] = useState(null);
+  const [progressBursts, setProgressBursts] = useState({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem('createit_sidebar_collapsed') === 'true';
@@ -264,16 +267,69 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     onShowToast?.('Your courses are ready. Scroll down to see your receipt.', 'info');
   };
 
-  // Progress actions
+  // Progress actions with milestone feedback
   const handleIncreaseProgress = (courseId) => {
+    const course = courses.find(c => c.id === courseId);
+    let newProgress = 0;
+    let previousProgress = 0;
+
     setEnrolled(prev => prev.map(item => {
       if (item.courseId === courseId) {
-        const next = Math.min(100, item.progress + 25);
-        return { ...item, progress: next };
+        previousProgress = item.progress;
+        newProgress = Math.min(100, item.progress + 25);
+        return { ...item, progress: newProgress };
       }
       return item;
     }));
-    onShowToast?.('Lesson completed (+25% progress)!', 'success');
+
+    // Trigger the floating +25% badge
+    setProgressBursts(prev => ({
+      ...prev,
+      [courseId]: { amount: 25, key: Date.now() }
+    }));
+
+    // Clean up the burst after the animation finishes
+    setTimeout(() => {
+      setProgressBursts(prev => {
+        const next = { ...prev };
+        delete next[courseId];
+        return next;
+      });
+    }, 1200);
+
+    // Milestone-specific feedback
+    if (newProgress >= 100) {
+      // Fire the completion modal (once per course, on reaching 100)
+      if (previousProgress < 100) {
+        setCompletionCourseId(courseId);
+      }
+      onShowToast?.(
+        course ? `Course complete: ${course.title}` : 'Course complete!',
+        'success'
+      );
+    } else if (newProgress === 75) {
+      onShowToast?.('Almost there! 75% complete.', 'success');
+    } else if (newProgress === 50) {
+      onShowToast?.('Halfway there! 50% complete.', 'success');
+    } else if (newProgress === 25) {
+      onShowToast?.('First milestone! 25% complete.', 'success');
+    } else {
+      onShowToast?.(`Progress updated to ${newProgress}%.`, 'success');
+    }
+  };
+
+  const handleCloseCompletion = () => {
+    setCompletionCourseId(null);
+  };
+
+  const handleClaimCertificate = () => {
+    const courseId = completionCourseId;
+    setCompletionCourseId(null);
+    // Open the certificate view (jumps to customer tab, reviews section allows
+    // a natural path; or navigate to detail page and use certificate modal)
+    setSelectedCourseId(courseId);
+    setActiveTab('catalog');
+    onShowToast?.('Scroll to your enrolled courses to claim your certificate.', 'info');
   };
 
   const toggleCurriculumAccordion = (courseId, e) => {
@@ -1033,8 +1089,13 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                     if (!course) return null;
                     const colorDef = CATEGORY_COLORS[course.category] || { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' };
 
+                    const burst = progressBursts[item.courseId];
+
                     return (
-                      <div key={item.courseId} className="enrolled-item-card">
+                      <div
+                        key={item.courseId}
+                        className={`enrolled-item-card ${burst ? 'just-updated' : ''}`}
+                      >
                         <img src={course.image || defaultHeroImg} alt={course.title} className="enrolled-thumb-rounded" />
                         
                         <div className="enrolled-details-pane">
@@ -1053,10 +1114,10 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                             </div>
                           </div>
 
-                          {/* Progress Bar with Gradient */}
+                          {/* Progress Bar with Gradient, milestone markers, and update burst */}
                           <div className="enrolled-progressbar-track">
                             <div 
-                              className="enrolled-progressbar-fill" 
+                              className={`enrolled-progressbar-fill ${burst ? 'is-updating' : ''}`}
                               style={{ 
                                 width: `${item.progress}%`,
                                 background: item.progress >= 100 
@@ -1064,6 +1125,25 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                                   : 'linear-gradient(90deg, #6366f1, #38bdf8)'
                               }} 
                             />
+
+                            {/* Milestone markers at 25, 50, 75 */}
+                            {[25, 50, 75].map(milestone => (
+                              <span
+                                key={milestone}
+                                className={`progress-milestone-badge ${item.progress >= milestone ? 'is-reached' : ''}`}
+                                style={{ left: `${milestone}%` }}
+                                aria-hidden="true"
+                              >
+                                {item.progress >= milestone ? '✓' : ''}
+                              </span>
+                            ))}
+
+                            {/* Floating +25% badge */}
+                            {burst && (
+                              <span key={burst.key} className="progress-burst">
+                                +{burst.amount}%
+                              </span>
+                            )}
                           </div>
 
                           {/* Actions */}
@@ -1229,6 +1309,13 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
         orderId={newOrderId}
         onStartLearning={handleCelebrationStartLearning}
         onClose={handleCelebrationClose}
+      />
+
+      <CompletionModal
+        isOpen={!!completionCourseId}
+        course={courses.find(c => c.id === completionCourseId)}
+        onClaimCertificate={handleClaimCertificate}
+        onClose={handleCloseCompletion}
       />
 
     </div>
