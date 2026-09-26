@@ -252,6 +252,22 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     setSearchQuery('');
   };
 
+  const handleTagCategoryClick = (category, e) => {
+    if (e) e.stopPropagation();
+    setSelectedCourseId(null);
+    setSelectedCategory(category);
+    setSearchQuery('');
+    setActiveTab('catalog');
+  };
+
+  const handleTagToolClick = (tool, e) => {
+    if (e) e.stopPropagation();
+    setSelectedCourseId(null);
+    setSelectedCategory('All');
+    setSearchQuery(tool);
+    setActiveTab('catalog');
+  };
+
   const hasActiveFilters = selectedCategory !== 'All' || sortBy !== 'popular' || levelFilter !== 'all' || priceFilter !== 'all' || searchQuery.trim() !== '';
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
@@ -544,12 +560,15 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                       const colorDef = CATEGORY_COLORS[selectedCourse.category] || { bg: 'rgba(99, 102, 241, 0.2)', text: '#818cf8', border: '#6366f1' };
                       return (
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                          <span 
-                            className="detail-cat-pill" 
+                          <button
+                            type="button"
+                            className="detail-cat-pill interactive-tag"
                             style={{ backgroundColor: colorDef.bg, color: colorDef.text, borderColor: colorDef.border }}
+                            onClick={(e) => handleTagCategoryClick(selectedCourse.category, e)}
+                            title={`Filter by ${selectedCourse.category}`}
                           >
                             {selectedCourse.category}
-                          </span>
+                          </button>
                           {selectedCourse.badge && (
                             <span className="list-row-badge-pill">
                               <Sparkles size={11} /> {selectedCourse.badge}
@@ -604,10 +623,17 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                       <h3>Software & Technologies Covered</h3>
                       <div className="list-tools-cluster" style={{ marginTop: '8px' }}>
                         {selectedCourse.tools.map((tool, idx) => (
-                          <span key={idx} className="list-tool-chip" style={{ fontSize: '12px', padding: '4px 10px' }}>
+                          <button
+                            key={idx}
+                            type="button"
+                            className="list-tool-chip interactive-tag"
+                            style={{ fontSize: '12px', padding: '4px 10px' }}
+                            onClick={(e) => handleTagToolClick(tool, e)}
+                            title={`Search for ${tool}`}
+                          >
                             <Wrench size={11} style={{ display: 'inline', marginRight: '4px' }} />
                             {tool}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -734,12 +760,15 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                               e.target.src = defaultHeroImg;
                             }}
                           />
-                          <span 
-                            className="list-row-cat-tag"
+                          <button
+                            type="button"
+                            className="list-row-cat-tag interactive-tag"
                             style={{ backgroundColor: colorDef.bg, color: colorDef.text, borderColor: colorDef.border }}
+                            onClick={(e) => handleTagCategoryClick(course.category, e)}
+                            title={`Filter by ${course.category}`}
                           >
                             {course.category}
-                          </span>
+                          </button>
                           <span className="list-row-duration-pill">
                             <Clock size={10} /> {course.duration}
                           </span>
@@ -770,9 +799,15 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                           {course.tools && course.tools.length > 0 && (
                             <div className="list-tools-cluster">
                               {course.tools.map((tool, tIdx) => (
-                                <span key={tIdx} className="list-tool-chip">
+                                <button
+                                  key={tIdx}
+                                  type="button"
+                                  className="list-tool-chip interactive-tag"
+                                  onClick={(e) => handleTagToolClick(tool, e)}
+                                  title={`Search for ${tool}`}
+                                >
                                   {tool}
-                                </span>
+                                </button>
                               ))}
                             </div>
                           )}
