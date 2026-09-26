@@ -31,6 +31,7 @@ import {
 import { loadCourses } from '../../utils/csvLoader';
 import defaultHeroImg from '../../assets/hero.png';
 import CustomerExperience from './CustomerExperience';
+import EnrollmentCelebration from './EnrollmentCelebration';
 import { sampleOrders, sampleTickets, sampleReviews } from '../../data/customerMockData';
 import Footer from '../Footer';
 
@@ -76,6 +77,8 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [customerSection, setCustomerSection] = useState('overview');
   const [newOrderId, setNewOrderId] = useState(null);
+  const [celebrationOpen, setCelebrationOpen] = useState(false);
+  const [celebrationCourses, setCelebrationCourses] = useState([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem('createit_sidebar_collapsed') === 'true';
@@ -205,6 +208,10 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
+
+    // Snapshot the cart before clearing it, so the celebration can use it
+    const purchasedCourses = [...cart];
+
     const order = {
       id: `CIT-${Date.now().toString().slice(-8)}`,
       createdAt: new Date().toISOString(),
@@ -222,8 +229,10 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     setNewOrderId(order.id);
     setCart([]);
     setCheckoutOpen(false);
-    setActiveTab('customer');
-    onShowToast?.(`Demo order ${order.id} complete. Your courses are ready.`, 'success');
+
+    // Show the celebration overlay instead of jumping straight to the customer hub
+    setCelebrationCourses(purchasedCourses);
+    setCelebrationOpen(true);
   };
 
   const handleInstantEnroll = (course, e) => {
@@ -237,6 +246,22 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     setActiveTab('cart');
     setSelectedCourseId(null);
     onShowToast?.(`"${course.title}" is ready for checkout.`, 'success');
+  };
+
+  const handleCelebrationStartLearning = () => {
+    setCelebrationOpen(false);
+    setCelebrationCourses([]);
+    setSelectedCourseId(null);
+    setActiveTab('dashboard');
+    onShowToast?.('Your learning dashboard is ready.', 'success');
+  };
+
+  const handleCelebrationClose = () => {
+    setCelebrationOpen(false);
+    setCelebrationCourses([]);
+    setSelectedCourseId(null);
+    setActiveTab('customer');
+    onShowToast?.('Your courses are ready. Scroll down to see your receipt.', 'info');
   };
 
   // Progress actions
@@ -1197,6 +1222,14 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
           <div className="cx-modal-actions"><button type="button" className="cx-secondary" onClick={() => setCheckoutOpen(false)}>Back to cart</button><button type="button" className="cx-primary" onClick={handleCheckout}>Confirm demo order <Check size={16} /></button></div>
         </div>
       </div>}
+
+      <EnrollmentCelebration
+        isOpen={celebrationOpen}
+        enrolledCourses={celebrationCourses}
+        orderId={newOrderId}
+        onStartLearning={handleCelebrationStartLearning}
+        onClose={handleCelebrationClose}
+      />
 
     </div>
   );
