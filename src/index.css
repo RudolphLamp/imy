@@ -2451,8 +2451,16 @@ html, body {
 }
 
 .enrolled-cat-badge {
+  display: inline-flex;
+  align-items: center;
   font-size: 11px;
   font-weight: 700;
+  padding: 10px 10px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  margin-bottom: 6px;
+  
 }
 
 .enrolled-course-name {
@@ -2489,6 +2497,8 @@ html, body {
   border-radius: 8px;
   overflow: visible;
   position: relative;
+  margin-top: 16px;     
+  margin-bottom: 18px;   
 }
 
 .enrolled-progressbar-fill {
@@ -7685,5 +7695,134 @@ button.detail-cat-pill {
   }
   .completion-title {
     font-size: 26px;
+  }
+}
+
+/* ==========================================================================
+   Certificate Ceremony (Group Design C - Peak-End, End)
+   ========================================================================== */
+
+/* Confetti canvas fills the certificate overlay */
+.cert-confetti-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Certificate modal entrance animation */
+.cert-modal-dialog {
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(20px) scale(0.96);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.cert-modal-dialog.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Ceremony header */
+.cert-congrats-header {
+  padding: 28px 32px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cert-congrats-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.4);
+  animation: certCongratsPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes certCongratsPulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.4); }
+  50% { box-shadow: 0 0 60px rgba(251, 191, 36, 0.65); }
+}
+
+.cert-congrats-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  color: #fbbf24;
+  margin-bottom: 8px;
+}
+
+.cert-congrats-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.4px;
+  margin-bottom: 8px;
+}
+
+.cert-congrats-title span {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #fcd34d);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: certNameShimmer 3s linear infinite;
+}
+
+@keyframes certNameShimmer {
+  to { background-position: 200% center; }
+}
+
+.cert-congrats-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+  max-width: 380px;
+}
+
+/* Shimmer sweep across the certificate frame */
+.cert-inner-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(251, 191, 36, 0.14) 50%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  background-position: -250% 0;
+  animation: certShimmerSweep 2.6s ease-out 0.6s 1;
+  pointer-events: none;
+  border-radius: 16px;
+}
+
+@keyframes certShimmerSweep {
+  0% { background-position: -250% 0; }
+  100% { background-position: 250% 0; }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .cert-congrats-header {
+    padding: 22px 20px 0;
+  }
+  .cert-congrats-title {
+    font-size: 22px;
+  }
+  .cert-congrats-icon {
+    width: 46px;
+    height: 46px;
   }
 }
