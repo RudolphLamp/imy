@@ -29,6 +29,7 @@ import {
 import { loadCourses } from '../../utils/csvLoader';
 import defaultHeroImg from '../../assets/hero.png';
 import CustomerExperience from './CustomerExperience';
+import { sampleOrders, sampleTickets, sampleReviews } from '../../data/customerMockData';
 
 // Rich Category color accents
 const CATEGORY_COLORS = {
@@ -46,26 +47,31 @@ const CATEGORY_COLORS = {
   '2D Animation': { bg: 'rgba(45, 212, 191, 0.18)', text: '#2dd4bf', border: 'rgba(45, 212, 191, 0.4)' }
 };
 
-const readStoredList = (key) => {
+const readStoredList = (key, fallback = [], legacyKey = null) => {
   try {
-    const value = JSON.parse(localStorage.getItem(key) || '[]');
-    return Array.isArray(value) ? value : [];
+    const saved = localStorage.getItem(key) ?? (legacyKey ? localStorage.getItem(legacyKey) : null);
+    const value = saved === null ? fallback : JSON.parse(saved);
+    return Array.isArray(value) ? value : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 };
 
 export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast }) {
+  const accountId = (user?.id || user?.email || 'demo-jane').toLowerCase();
+  const storagePrefix = `createit_${encodeURIComponent(accountId)}_`;
+  const legacyKey = (name) => accountId === 'jane.smith@createit.academy' ? `createit_${name}` : null;
   const [courses, setCourses] = useState([]);
   const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('view') === 'customer' ? 'customer' : 'catalog');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [expandedCurriculums, setExpandedCurriculums] = useState({});
-  const [orders, setOrders] = useState(() => readStoredList('createit_orders'));
-  const [tickets, setTickets] = useState(() => readStoredList('createit_tickets'));
-  const [reviews, setReviews] = useState(() => readStoredList('createit_reviews'));
+  const [orders, setOrders] = useState(() => readStoredList(`${storagePrefix}orders`, sampleOrders, legacyKey('orders')));
+  const [tickets, setTickets] = useState(() => readStoredList(`${storagePrefix}tickets`, sampleTickets, legacyKey('tickets')));
+  const [reviews, setReviews] = useState(() => readStoredList(`${storagePrefix}reviews`, sampleReviews, legacyKey('reviews')));
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [newOrderId, setNewOrderId] = useState(null);
   
   // Sort, Level & Price filters
   const [sortBy, setSortBy] = useState('popular'); // 'popular', 'price-asc', 'price-desc', 'rating', 'title'
@@ -74,27 +80,14 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
 
   // Cart & Enrolled state with localStorage persistence
   const [cart, setCart] = useState(() => {
-    try {
-      const saved = localStorage.getItem('createit_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+    return readStoredList(`${storagePrefix}cart`, [], legacyKey('cart'));
   });
 
   const [enrolled, setEnrolled] = useState(() => {
-    try {
-      const saved = localStorage.getItem('createit_enrolled');
-      return saved ? JSON.parse(saved) : [
-        { courseId: '1', progress: 65 },
-        { courseId: '2', progress: 30 }
-      ];
-    } catch {
-      return [
-        { courseId: '1', progress: 65 },
-        { courseId: '2', progress: 30 }
-      ];
-    }
+    return readStoredList(`${storagePrefix}enrolled`, [
+      { courseId: '1', progress: 65 },
+      { courseId: '2', progress: 30 }
+    ], legacyKey('enrolled'));
   });
 
   // Load CSV data on mount dynamically from /courses.csv
@@ -106,16 +99,16 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
 
   // Sync state to localStorage
   useEffect(() => {
-    localStorage.setItem('createit_cart', JSON.stringify(cart));
-  }, [cart]);
+    localStorage.setItem(`${storagePrefix}cart`, JSON.stringify(cart));
+  }, [cart, storagePrefix]);
 
   useEffect(() => {
-    localStorage.setItem('createit_enrolled', JSON.stringify(enrolled));
-  }, [enrolled]);
+    localStorage.setItem(`${storagePrefix}enrolled`, JSON.stringify(enrolled));
+  }, [enrolled, storagePrefix]);
 
-  useEffect(() => { localStorage.setItem('createit_orders', JSON.stringify(orders)); }, [orders]);
-  useEffect(() => { localStorage.setItem('createit_tickets', JSON.stringify(tickets)); }, [tickets]);
-  useEffect(() => { localStorage.setItem('createit_reviews', JSON.stringify(reviews)); }, [reviews]);
+  useEffect(() => { localStorage.setItem(`${storagePrefix}orders`, JSON.stringify(orders)); }, [orders, storagePrefix]);
+  useEffect(() => { localStorage.setItem(`${storagePrefix}tickets`, JSON.stringify(tickets)); }, [tickets, storagePrefix]);
+  useEffect(() => { localStorage.setItem(`${storagePrefix}reviews`, JSON.stringify(reviews)); }, [reviews, storagePrefix]);
 
   // Unique categories derived dynamically from loaded courses
   const categories = useMemo(() => {
@@ -209,6 +202,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
     });
     setEnrolled(newEnrolled);
     setOrders(prev => [order, ...prev]);
+    setNewOrderId(order.id);
     setCart([]);
     setCheckoutOpen(false);
     setActiveTab('customer');
@@ -413,8 +407,19 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
             </button>
           </div>
 
+          {activeTab === 'customer' && <div className="cx-sidebar-card">
+            <span className="cx-section-kicker">MY WORKSPACE</span>
+            <div className="cx-sidebar-avatar"><User size={22} /></div>
+            <strong>{user?.name || 'Creator'}</strong>
+            <small>{user?.email || 'Local prototype account'}</small>
+            <div className="cx-sidebar-rule" />
+            <span>{enrolled.length} courses in your learning space</span>
+            <button type="button" onClick={() => setActiveTab('dashboard')}>Open My Learning <ArrowLeft size={13} /></button>
+            <p>Activity is stored on this device.</p>
+          </div>}
+
           {/* Sort & Filter Controls in Sidebar */}
-          <div className="sidebar-nav-section sidebar-filters-box">
+          {activeTab === 'catalog' && <div className="sidebar-nav-section sidebar-filters-box">
             <div className="sidebar-heading-row">
               <span className="sidebar-heading-label" style={{ paddingLeft: 0, marginBottom: 0 }}>
                 <SlidersHorizontal size={12} style={{ display: 'inline', marginRight: '4px' }} />
@@ -478,10 +483,10 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                 <option value="above750">Above R750</option>
               </select>
             </div>
-          </div>
+          </div>}
 
           {/* Department / Category Shortcuts */}
-          <div className="sidebar-nav-section">
+          {activeTab === 'catalog' && <div className="sidebar-nav-section">
             <span className="sidebar-heading-label">CREATIVE CATEGORIES</span>
             {categories.map(cat => {
               const catStyle = CATEGORY_COLORS[cat] || { text: '#a5b4fc' };
@@ -505,7 +510,7 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
                 </button>
               );
             })}
-          </div>
+          </div>}
 
         </aside>
 
@@ -1006,12 +1011,16 @@ export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast
               tickets={tickets}
               onAddTicket={(ticket) => setTickets(prev => [ticket, ...prev])}
               reviews={reviews}
-              onAddReview={(review) => setReviews(prev => [review, ...prev])}
+              onAddReview={(review) => setReviews(prev => [review, ...prev.filter(item => item.courseId !== review.courseId)])}
               enrolled={enrolled}
               courses={courses}
               onOpenCourse={(id) => { setActiveTab('catalog'); setSelectedCourseId(id); }}
               onOpenLearning={() => setActiveTab('dashboard')}
+              onExploreCatalog={() => { setSelectedCourseId(null); setActiveTab('catalog'); }}
+              onLoadDemoData={() => { setOrders(sampleOrders); setTickets(sampleTickets); setReviews(sampleReviews); onShowToast?.('Sample experience loaded.', 'success'); }}
               onShowToast={onShowToast}
+              newOrderId={newOrderId}
+              onDismissOrder={() => setNewOrderId(null)}
             />
           ) : activeTab === 'cart' ? (
             /* 4. Cart View */

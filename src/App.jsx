@@ -12,9 +12,10 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem('createit_user');
-      return saved ? JSON.parse(saved) : { name: 'Jane Smith', email: 'jane.smith@createit.academy', isPro: true };
+      const account = saved ? JSON.parse(saved) : { name: 'Jane Smith', email: 'jane.smith@createit.academy', isPro: true };
+      return { ...account, id: account.id || account.email?.toLowerCase() || 'demo-jane' };
     } catch {
-      return { name: 'Jane Smith', email: 'jane.smith@createit.academy', isPro: true };
+      return { id: 'jane.smith@createit.academy', name: 'Jane Smith', email: 'jane.smith@createit.academy', isPro: true };
     }
   });
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
@@ -28,17 +29,19 @@ export default function App() {
   };
 
   const handleLoginSuccess = (user) => {
-    setCurrentUser(user);
+    const account = { ...user, id: user.id || user.email?.toLowerCase() };
+    setCurrentUser(account);
     try {
-      localStorage.setItem('createit_user', JSON.stringify(user));
+      localStorage.setItem('createit_user', JSON.stringify(account));
     } catch {}
     setView('products');
   };
 
   const handleRegisterSuccess = (user) => {
-    setCurrentUser(user);
+    const account = { ...user, id: user.id || user.email?.toLowerCase() };
+    setCurrentUser(account);
     try {
-      localStorage.setItem('createit_user', JSON.stringify(user));
+      localStorage.setItem('createit_user', JSON.stringify(account));
     } catch {}
     setView('products');
   };

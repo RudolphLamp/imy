@@ -23,6 +23,8 @@ Use **Customer Experience** in the left navigation. The account hub includes:
 
 The cart's **Review Checkout** button opens an order summary. **Confirm demo order** creates a local receipt, enrolls the courses, and opens the customer hub. It is a simulation: no card information is collected, no charge is made, and no support email is sent. Data is kept in `localStorage`, so it remains after refresh in the same browser and disappears if browser storage is cleared. There is no database or backend.
 
+For a full walkthrough of the flow, UX choices, sample data, and storage model, see [Group Design C — Customer Experience](docs/customer-experience.md).
+
 ## Research and submission notes
 
 The assignment requires three short research sessions on an existing site using the shortened UEQ. These must be run with real participants; results have not been invented. [The Group C research worksheet](docs/group-c-research.md) provides tasks, an eight item questionnaire, a scoring table, and a place to record resulting design guidelines.
