@@ -1744,6 +1744,8 @@ html, body {
 
 .list-status-text strong {
   color: #ffffff;
+  padding: 0 4px;
+  font-weight: 800;
 }
 
 .btn-clear-search-mini {
