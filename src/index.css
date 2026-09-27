@@ -1744,6 +1744,8 @@ html, body {
 
 .list-status-text strong {
   color: #ffffff;
+  padding: 0 4px;
+  font-weight: 800;
 }
 
 .btn-clear-search-mini {
@@ -2509,8 +2511,15 @@ html, body {
 
 .enrolled-action-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 2px;
+}
+
+.enrolled-action-buttons > button {
+  flex: 0 1 auto;
+  min-width: 140px;
+  max-width: 220px;
 }
 
 .btn-progress-step {
@@ -2519,10 +2528,14 @@ html, body {
   color: #ffffff;
   font-size: 12px;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .btn-progress-step:hover {
@@ -2535,10 +2548,14 @@ html, body {
   color: #cbd5e1;
   font-size: 12px;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .btn-progress-view-info:hover {
@@ -5929,17 +5946,19 @@ html, body {
   gap: 6px;
 }
 .btn-view-certificate {
-  padding: 10px 14px;
+  padding: 8px 14px;
   background: rgba(251, 191, 36, 0.15);
   border: 1px solid rgba(251, 191, 36, 0.35);
   color: #fbbf24;
   font-size: 12px;
   font-weight: 700;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .badges-showcase-grid {
@@ -7077,32 +7096,6 @@ button.detail-cat-pill {
   flex-shrink: 0;
 }
 
-.sidebar-toggle-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-}
-
-.sidebar-toggle-btn:hover {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.4);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.sidebar-toggle-btn:focus-visible {
-  outline: 2px solid #818cf8;
-  outline-offset: 2px;
-}
 
 /* Sidebar collapse animation */
 .sleek-floating-sidebar {
