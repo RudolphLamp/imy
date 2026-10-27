@@ -10,11 +10,6 @@ export default function Footer({ onNavigate, onNavigateToTab }) {
     if (onNavigateToTab) onNavigateToTab(tab);
   };
 
-  const handleAnchor = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">

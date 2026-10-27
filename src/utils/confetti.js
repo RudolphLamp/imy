@@ -16,7 +16,7 @@ const COLORS = [
 const randomBetween = (min, max) => Math.random() * (max - min) + min;
 
 export function launchConfetti(canvas, options = {}) {
-  if (!canvas || !canvas.getContext) return;
+  if (!canvas || !canvas.getContext || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   const {
     duration = 3200,        // how long the burst runs (ms)

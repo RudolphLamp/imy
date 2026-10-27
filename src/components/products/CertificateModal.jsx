@@ -1,21 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { 
-  X, 
-  Award, 
-  Download,
-  Sparkles,
-  Loader2
-} from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { launchConfetti } from '../../utils/confetti';
+import React, { useEffect, useRef, useState } from "react";
+import { X, Award, Download, Sparkles, Loader2 } from "lucide-react";
+import html2canvas from "html2canvas";
+import { launchConfetti } from "../../utils/confetti";
+import useDialog from "../../hooks/useDialog";
 
-export default function CertificateModal({ 
-  isOpen, 
-  onClose, 
-  course, 
-  user, 
-  onShowToast 
+export default function CertificateModal({
+  isOpen,
+  onClose,
+  course,
+  user,
+  onShowToast,
+  completedAt,
 }) {
+  const dialogRef = useRef(null);
+  useDialog(isOpen, onClose, dialogRef);
   const canvasRef = useRef(null);
   const cleanupRef = useRef(null);
   const [showContent, setShowContent] = useState(false);
@@ -54,13 +52,16 @@ export default function CertificateModal({
 
   if (!isOpen || !course) return null;
 
-  const issueDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const issueDate = new Date(completedAt || Date.now()).toLocaleDateString(
+    "en-ZA",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  );
 
-  const certId = `UP-IMY320-${course.id.toUpperCase()}-2026`;
+  const certId = `CIT-${course.id.toUpperCase()}-2026`;
 
   const handleDownload = async () => {
     if (isDownloading) return;
@@ -68,11 +69,11 @@ export default function CertificateModal({
 
     try {
       // Wait a frame for any pending layout/animation to settle
-      await new Promise(resolve => setTimeout(resolve, 60));
+      await new Promise((resolve) => setTimeout(resolve, 60));
 
-      const frame = document.querySelector('.cert-inner-frame');
+      const frame = document.querySelector(".cert-inner-frame");
       if (!frame) {
-        onShowToast('Certificate not ready. Please try again.', 'error');
+        onShowToast("Certificate not ready. Please try again.", "error");
         setIsDownloading(false);
         return;
       }
@@ -80,7 +81,7 @@ export default function CertificateModal({
       // Give html2canvas the full node, not the scrolled/clipped viewport version.
       // scale: 2 doubles resolution for a crisp image.
       const canvas = await html2canvas(frame, {
-        backgroundColor: '#0e1022',
+        backgroundColor: "#0e1022",
         scale: 2,
         useCORS: true,
         allowTaint: false,
@@ -92,11 +93,11 @@ export default function CertificateModal({
       await new Promise((resolve, reject) => {
         canvas.toBlob((blob) => {
           if (!blob) {
-            reject(new Error('Failed to create image blob'));
+            reject(new Error("Failed to create image blob"));
             return;
           }
           const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
+          const link = document.createElement("a");
           link.href = url;
           link.download = `CreateIT-Certificate-${course.id.toUpperCase()}.png`;
           document.body.appendChild(link);
@@ -105,13 +106,16 @@ export default function CertificateModal({
           // Delay revoke so the download can start
           setTimeout(() => URL.revokeObjectURL(url), 500);
           resolve();
-        }, 'image/png');
+        }, "image/png");
       });
 
-      onShowToast('Certificate downloaded as PNG.', 'success');
+      onShowToast("Certificate downloaded as PNG.", "success");
     } catch (err) {
-      console.error('Certificate download failed:', err);
-      onShowToast('Could not generate the certificate image. Please try again.', 'error');
+      console.error("Certificate download failed:", err);
+      onShowToast(
+        "Could not generate the certificate image. Please try again.",
+        "error",
+      );
     } finally {
       setIsDownloading(false);
     }
@@ -120,21 +124,34 @@ export default function CertificateModal({
   return (
     <div className="cert-modal-overlay" onClick={onClose}>
       {/* Confetti canvas fills the overlay */}
-      <canvas ref={canvasRef} className="cert-confetti-canvas" aria-hidden="true" />
+      <canvas
+        ref={canvasRef}
+        className="cert-confetti-canvas"
+        aria-hidden="true"
+      />
 
-      <div className={`cert-modal-dialog ${showContent ? 'is-visible' : ''}`} onClick={(e) => e.stopPropagation()}>
-        
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="certificate-title"
+        className={`cert-modal-dialog ${showContent ? "is-visible" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Congratulations ceremony header */}
         <div className="cert-congrats-header">
           <div className="cert-congrats-icon">
             <Sparkles size={28} color="#fbbf24" />
           </div>
-          <span className="cert-congrats-eyebrow">ACCREDITED ACHIEVEMENT</span>
-          <h2 className="cert-congrats-title">
-            Congratulations, <span>{user?.name?.split(' ')[0] || 'Creator'}</span>!
+          <span className="cert-congrats-eyebrow">YOUR CREATIVE MILESTONE</span>
+          <h2 id="certificate-title" className="cert-congrats-title">
+            Congratulations,{" "}
+            <span>{user?.name?.split(" ")[0] || "Creator"}</span>!
           </h2>
           <p className="cert-congrats-sub">
-            You've completed every lesson. Here is your official certificate.
+            You've completed every lesson. Here is your certificate of
+            completion.
           </p>
         </div>
 
@@ -142,13 +159,13 @@ export default function CertificateModal({
         <div className="cert-modal-topbar">
           <div className="cert-top-title">
             <Award size={18} color="#fbbf24" />
-            <span>Accredited Diploma of Completion</span>
+            <span>Certificate of Completion</span>
           </div>
 
           <div className="cert-top-actions">
-            <button 
-              type="button" 
-              className="btn-cert-action" 
+            <button
+              type="button"
+              className="btn-cert-action"
               onClick={handleDownload}
               disabled={isDownloading}
             >
@@ -164,7 +181,12 @@ export default function CertificateModal({
                 </>
               )}
             </button>
-            <button type="button" className="btn-cert-close" onClick={onClose}>
+            <button
+              type="button"
+              className="btn-cert-close"
+              aria-label="Close certificate"
+              onClick={onClose}
+            >
               <X size={16} />
             </button>
           </div>
@@ -177,45 +199,67 @@ export default function CertificateModal({
 
             {/* University & Academy Header */}
             <div className="cert-header">
-              <span className="cert-inst-tag">UNIVERSITY OF PRETORIA • IMY 320</span>
-              <h2 className="cert-brand">Create<span>.IT</span> ACADEMY</h2>
-              <span className="cert-doc-type">CERTIFICATE OF CREATIVE MASTERY</span>
+              <span className="cert-inst-tag">
+                CREATE.IT • IMY 320 STUDENT PROTOTYPE
+              </span>
+              <h2 className="cert-brand">
+                Create<span>.IT</span> ACADEMY
+              </h2>
+              <span className="cert-doc-type">CERTIFICATE OF COMPLETION</span>
             </div>
 
             {/* Recipient */}
             <div className="cert-body">
-              <p className="cert-presents-to">This credential is proudly awarded to</p>
-              <h3 className="cert-recipient-name">{user?.name || 'Jane Smith'}</h3>
+              <p className="cert-presents-to">
+                This certificate is proudly awarded to
+              </p>
+              <h3 className="cert-recipient-name">
+                {user?.name || "Jane Smith"}
+              </h3>
               <p className="cert-description-text">
-                For successfully fulfilling all curriculum requirements, portfolio projects, and technical competencies in
+                For completing all learning modules in
               </p>
               <h4 className="cert-course-title">{course.title}</h4>
               <p className="cert-duration-note">
-                Equivalent to {course.duration} of rigorous studio production training under lead industry mentor <strong>{course.instructor?.name || course.instructor || 'Studio Faculty'}</strong>.
+                {course.duration} course pathway with{" "}
+                <strong>
+                  {course.instructor?.name ||
+                    course.instructor ||
+                    "Studio Faculty"}
+                </strong>
+                .
               </p>
             </div>
 
             {/* Bottom Signatures & Verification */}
             <div className="cert-footer-row">
               <div className="cert-signature-box">
-                <div className="signature-line-art">{course.instructor?.name || course.instructor || 'Studio Faculty'}</div>
+                <div className="signature-line-art">
+                  {course.instructor?.name ||
+                    course.instructor ||
+                    "Studio Faculty"}
+                </div>
                 <div className="signature-rule" />
                 <span className="sig-label">Lead Studio Instructor</span>
-                <span className="sig-name">{course.instructor?.name || course.instructor || 'Studio Faculty'}</span>
+                <span className="sig-name">
+                  {course.instructor?.name ||
+                    course.instructor ||
+                    "Studio Faculty"}
+                </span>
               </div>
 
               <div className="cert-seal-box">
                 <div className="seal-gold-badge">
                   <Award size={28} color="#fbbf24" />
-                  <span>OFFICIAL SEAL</span>
+                  <span>WELL EARNED</span>
                 </div>
               </div>
 
               <div className="cert-signature-box">
-                <div className="signature-line-art">Prof. IMY Academic Board</div>
+                <div className="signature-line-art">Create.IT</div>
                 <div className="signature-rule" />
-                <span className="sig-label">Academic Dean / IMY 320</span>
-                <span className="sig-name">Multimedia Trends 2026</span>
+                <span className="sig-label">Creative Learning</span>
+                <span className="sig-name">IMY 320 Student Project</span>
               </div>
             </div>
 
@@ -225,12 +269,10 @@ export default function CertificateModal({
               <span>•</span>
               <span>Verification ID: {certId}</span>
               <span>•</span>
-              <span>createit.academy/verify/{certId}</span>
+              <span>Demo certificate · Not an accredited qualification</span>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   );

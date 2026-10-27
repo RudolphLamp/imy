@@ -1,282 +1,226 @@
-import React, { useState } from 'react';
-import { 
-  X, 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
-  Maximize, 
-  CheckCircle2, 
-  Circle, 
-  Download, 
-  FileText, 
-  ArrowLeft 
-} from 'lucide-react';
+import { useRef, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  FileText,
+  Download,
+  BookOpen,
+} from "lucide-react";
+import useDialog from "../../hooks/useDialog";
+import { completedModules } from "../../utils/learning";
 
-export default function CoursePlayerModal({ 
-  isOpen, 
-  onClose, 
-  course, 
-  enrolledInfo, 
-  onUpdateProgress, 
-  onShowToast 
+export default function CoursePlayerModal({
+  course,
+  enrolledInfo,
+  onClose,
+  onCompleteModule,
+  onSaveModule,
+  notes,
+  onSaveNotes,
 }) {
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState('1.0x');
-  const [activeTab, setActiveTab] = useState('syllabus'); // 'syllabus', 'notes', 'resources'
-  const [completedLessonsMap, setCompletedLessonsMap] = useState({});
-  const [currentLesson, setCurrentLesson] = useState(
-    course?.syllabus?.[0]?.lessons?.[0]?.title || 'Course Introduction & Pipeline Overview'
+  const done = completedModules(enrolledInfo, course.lessons.length);
+  const [active, setActive] = useState(
+    enrolledInfo.currentModule ??
+      course.lessons.findIndex((_, i) => !done.includes(i)),
   );
-
-  if (!isOpen || !course) return null;
-
-  const handleToggleLessonComplete = (lessonTitle) => {
-    const isNowDone = !completedLessonsMap[lessonTitle];
-    const newMap = { ...completedLessonsMap, [lessonTitle]: isNowDone };
-    setCompletedLessonsMap(newMap);
-
-    const doneCount = Object.values(newMap).filter(Boolean).length;
-    const totalLessons = course.lessonsCount || 40;
-    const newPct = Math.min(100, Math.round(((enrolledInfo?.completedLessons || 15) + doneCount) / totalLessons * 100));
-
-    onUpdateProgress(course.id, newPct);
-    onShowToast(
-      isNowDone ? `✓ Completed "${lessonTitle}"! Progress updated to ${newPct}%.` : `Marked "${lessonTitle}" as incomplete.`,
-      'success'
-    );
+  const [tab, setTab] = useState("lesson");
+  const ref = useRef(null);
+  useDialog(true, onClose, ref);
+  const index = active < 0 ? 0 : active;
+  const title = course.lessons[index].replace(/^Module \d+:\s*/, "");
+  const select = (i) => {
+    setActive(i);
+    onSaveModule(course.id, i);
   };
-
+  const download = () => {
+    const content = `${course.title}\n${title}\n\nPractice brief\n1. Set up a project in ${course.tools[0]}.\n2. Explore ${title.toLowerCase()} and document your process.\n3. Export a small experiment and reflect on what you learned.\n\nYour notes\n${notes || "(No notes yet)"}\n\nCreate.IT - IMY 320 prototype lesson guide.`;
+    const url = URL.createObjectURL(
+      new Blob([content], { type: "text/plain" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `CreateIT-${course.id}-module-${index + 1}.txt`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
   return (
-    <div className="player-modal-overlay">
-      <div className="player-modal-container">
-        
-        {/* Top Navbar */}
-        <div className="player-modal-topbar">
-          <div className="player-topbar-left">
-            <button type="button" className="btn-player-back" onClick={onClose}>
-              <ArrowLeft size={16} />
-              <span>Back to Dashboard</span>
-            </button>
-            <div className="player-course-meta">
-              <span className="player-cat-pill" style={{ color: course.color }}>{course.category}</span>
-              <h3 className="player-course-title">{course.title}</h3>
-            </div>
-          </div>
-
-          <div className="player-topbar-right">
-            <button 
-              type="button" 
-              className="btn-mark-active-complete" 
-              onClick={() => handleToggleLessonComplete(currentLesson)}
+    <div className="fd-overlay">
+      <section
+        className="fd-player"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lesson-title"
+        tabIndex={-1}
+        ref={ref}
+      >
+        <header className="fd-player-header">
+          <button className="fd-text-button" onClick={onClose}>
+            <ArrowLeft size={17} /> My Learning
+          </button>
+          <span className="fd-tag">LESSON PREVIEW</span>
+        </header>
+        <div className="fd-player-grid">
+          <div className="fd-lesson-main">
+            <div
+              className="fd-lesson-art"
+              style={{
+                backgroundImage: `linear-gradient(0deg, #14151f, transparent), url(${course.image})`,
+              }}
             >
-              <CheckCircle2 size={15} />
-              <span>{completedLessonsMap[currentLesson] ? 'Completed ✓' : 'Mark Current Lesson Complete'}</span>
-            </button>
-
-            <button type="button" className="btn-player-close" onClick={onClose}>
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Main Split Layout: Video Screen on Left, Syllabus & Notes on Right */}
-        <div className="player-modal-main-split">
-          
-          {/* Left: Video Player */}
-          <div className="player-video-column">
-            <div className="active-video-viewport">
-              <img 
-                src={course.bannerImage || course.image} 
-                alt="Course Playback" 
-                className="video-poster-img" 
-              />
-              <div className="video-viewport-scrim" />
-
-              {/* Center Play/Pause Overlay */}
-              <button 
-                type="button" 
-                className="viewport-center-btn" 
-                onClick={() => setIsPlaying(!isPlaying)}
-              >
-                {isPlaying ? <Pause size={32} /> : <Play size={32} style={{ marginLeft: '4px' }} />}
-              </button>
-
-              {/* Bottom Custom Video Bar */}
-              <div className="video-bottom-controls-bar">
-                <div className="video-timeline-scrub">
-                  <div className="timeline-fill" style={{ width: '42%' }} />
-                </div>
-
-                <div className="video-controls-action-row">
-                  <div className="vc-left">
-                    <button type="button" className="vc-btn" onClick={() => setIsPlaying(!isPlaying)}>
-                      {isPlaying ? <Pause size={17} /> : <Play size={17} />}
-                    </button>
-                    <button type="button" className="vc-btn" onClick={() => setIsMuted(!isMuted)}>
-                      {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
-                    </button>
-                    <span className="vc-time-display">08:24 / 22:15</span>
-                  </div>
-
-                  <div className="vc-center">
-                    <span className="vc-current-lesson-label">{currentLesson}</span>
-                  </div>
-
-                  <div className="vc-right">
-                    <button 
-                      type="button" 
-                      className="vc-speed-btn" 
-                      onClick={() => {
-                        const speeds = ['1.0x', '1.25x', '1.5x', '2.0x'];
-                        const next = speeds[(speeds.indexOf(playbackSpeed) + 1) % speeds.length];
-                        setPlaybackSpeed(next);
-                        onShowToast(`Playback speed set to ${next}`, 'info');
-                      }}
-                    >
-                      {playbackSpeed}
-                    </button>
-
-                    <button 
-                      type="button" 
-                      className="vc-btn" 
-                      onClick={() => onShowToast('Fullscreen player mode active', 'info')}
-                    >
-                      <Maximize size={17} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Video Lesson Description & Key Highlights */}
-            <div className="active-lesson-bottom-desc">
-              <h4>{currentLesson}</h4>
+              <span>
+                <BookOpen size={28} />
+              </span>
               <p>
-                In this lecture, {course.instructor.name} explores the core architectural principles, file setup, and practical production shortcuts used in high-end studios.
+                MODULE {index + 1} OF {course.lessons.length}
               </p>
+              <h2 id="lesson-title">{title}</h2>
             </div>
-          </div>
-
-          {/* Right: Sidebar Tabs (Syllabus, Notes, Resources) */}
-          <div className="player-sidebar-column">
-            
-            {/* Tabs Header */}
-            <div className="player-tabs-header">
-              <button 
-                type="button" 
-                className={`player-tab-btn ${activeTab === 'syllabus' ? 'active' : ''}`} 
-                onClick={() => setActiveTab('syllabus')}
+            <h3>{course.title}</h3>
+            <p className="fd-muted">
+              With {course.instructor} · Your place and completed modules are
+              saved automatically.
+            </p>
+            <div className="fd-segmented">
+              <button
+                aria-pressed={tab === "lesson"}
+                onClick={() => setTab("lesson")}
               >
-                <span>Curriculum</span>
+                Lesson guide
               </button>
-              <button 
-                type="button" 
-                className={`player-tab-btn ${activeTab === 'notes' ? 'active' : ''}`} 
-                onClick={() => setActiveTab('notes')}
+              <button
+                aria-pressed={tab === "notes"}
+                onClick={() => setTab("notes")}
               >
-                <span>Notes & Guide</span>
+                My notes
               </button>
-              <button 
-                type="button" 
-                className={`player-tab-btn ${activeTab === 'resources' ? 'active' : ''}`} 
-                onClick={() => setActiveTab('resources')}
+              <button
+                aria-pressed={tab === "resources"}
+                onClick={() => setTab("resources")}
               >
-                <span>Files ({course.tools?.length || 4})</span>
+                Resources
               </button>
             </div>
-
-            {/* Syllabus Tab Content */}
-            {activeTab === 'syllabus' && (
-              <div className="player-tab-content-scroll">
-                {course.syllabus?.map((mod, mIdx) => (
-                  <div key={mIdx} className="player-module-group">
-                    <h5 className="player-mod-heading">
-                      Module {mod.moduleNumber || mIdx + 1}: {mod.title}
-                    </h5>
-                    <div className="player-lesson-list">
-                      {mod.lessons?.map((les, lIdx) => {
-                        const isCurrent = currentLesson === les.title;
-                        const isDone = !!completedLessonsMap[les.title];
-
-                        return (
-                          <div 
-                            key={lIdx} 
-                            className={`player-lesson-item ${isCurrent ? 'active' : ''}`} 
-                            onClick={() => {
-                              setCurrentLesson(les.title);
-                              setIsPlaying(true);
-                            }}
-                          >
-                            <button 
-                              type="button" 
-                              className="btn-check-lesson-inline" 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleToggleLessonComplete(les.title);
-                              }}
-                            >
-                              {isDone ? (
-                                <CheckCircle2 size={16} color="#34d399" />
-                              ) : (
-                                <Circle size={16} color="#64748b" />
-                              )}
-                            </button>
-
-                            <div className="player-les-text">
-                              <span className="player-les-title">{les.title}</span>
-                              <span className="player-les-duration">{les.duration}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Notes Tab Content */}
-            {activeTab === 'notes' && (
-              <div className="player-tab-content-scroll player-notes-body">
-                <h5>Key Concept Summary</h5>
+            {tab === "lesson" && (
+              <div className="fd-lesson-copy">
+                <span className="fd-kicker">EXPLORE. EXPERIMENT. CREATE.</span>
+                <h3>Make the idea your own.</h3>
                 <p>
-                  Remember to maintain non-destructive layer naming and organize your project assets in subfolders (Geometry, Materials, Shaders, Renders).
+                  This prototype lesson introduces{" "}
+                  <strong>{title.toLowerCase()}</strong>. A full teaching system
+                  is outside the scope of this project.
                 </p>
-                <div className="notes-highlight-box">
-                  <strong>IMY 320 UX Pro Tip:</strong>
-                  <span>Always structure interaction feedback within 100ms of user input to ensure perceived instantaneous responsiveness.</span>
-                </div>
+                <ol>
+                  <li>Set up a small practice project in {course.tools[0]}.</li>
+                  <li>
+                    Explore the module topic and try two different approaches.
+                  </li>
+                  <li>
+                    Save your experiment and write a short reflection in My
+                    notes.
+                  </li>
+                </ol>
+                <p className="fd-muted">
+                  Mark this module complete when you are ready to continue.
+                </p>
               </div>
             )}
-
-            {/* Resources Tab Content */}
-            {activeTab === 'resources' && (
-              <div className="player-tab-content-scroll player-resources-body">
-                <h5>Downloadable Project Assets</h5>
-                <div className="resource-download-card">
-                  <FileText size={16} color="#818cf8" />
-                  <div>
-                    <h6>{course.title.slice(0, 24)}...Project_Files.zip</h6>
-                    <span>420 MB • Full Scene Assets</span>
-                  </div>
-                  <button 
-                    type="button" 
-                    className="btn-download-res" 
-                    onClick={() => onShowToast('Downloading course project assets bundle...', 'info')}
-                  >
-                    <Download size={14} />
-                  </button>
+            {tab === "notes" && (
+              <label className="fd-notes">
+                Your course notes{" "}
+                <span className="fd-muted">
+                  Saved on this device as you type.
+                </span>
+                <textarea
+                  rows={7}
+                  placeholder="Ideas, questions, and things to try..."
+                  value={notes || ""}
+                  onChange={(e) => onSaveNotes(course.id, e.target.value)}
+                />
+              </label>
+            )}
+            {tab === "resources" && (
+              <div className="fd-resource">
+                <FileText size={25} />
+                <div>
+                  <strong>Module {index + 1} practice guide</strong>
+                  <p className="fd-muted">
+                    Text file · Includes your course notes
+                  </p>
                 </div>
+                <button className="fd-secondary" onClick={download}>
+                  <Download size={16} /> Download guide
+                </button>
               </div>
             )}
-
+            <div className="fd-lesson-actions">
+              <button
+                className="fd-secondary"
+                disabled={index === 0}
+                onClick={() => select(index - 1)}
+              >
+                <ArrowLeft size={16} /> Previous
+              </button>
+              {done.includes(index) ? (
+                <button
+                  className="fd-primary"
+                  disabled={index === course.lessons.length - 1}
+                  onClick={() => select(index + 1)}
+                >
+                  {index === course.lessons.length - 1
+                    ? "Module completed"
+                    : "Next module"}{" "}
+                  <ArrowRight size={16} />
+                </button>
+              ) : (
+                <button
+                  className="fd-primary"
+                  onClick={() => {
+                    onCompleteModule(course.id, index);
+                    if (index < course.lessons.length - 1) setActive(index + 1);
+                  }}
+                >
+                  Mark complete & continue <CheckCircle2 size={16} />
+                </button>
+              )}
+            </div>
           </div>
-
+          <aside className="fd-lesson-sidebar">
+            <span className="fd-kicker">YOUR LEARNING PATH</span>
+            <h3>Course content</h3>
+            <p className="fd-muted">
+              {done.length} of {course.lessons.length} modules completed
+            </p>
+            <progress
+              value={done.length}
+              max={course.lessons.length}
+              aria-label="Modules completed"
+            />
+            {course.lessons.map((lesson, i) => (
+              <button
+                key={lesson}
+                className={`fd-module ${i === index ? "active" : ""}`}
+                aria-current={i === index ? "step" : undefined}
+                onClick={() => select(i)}
+              >
+                {done.includes(i) ? (
+                  <CheckCircle2 size={19} />
+                ) : (
+                  <Circle size={19} />
+                )}
+                <span>
+                  <small>
+                    MODULE {i + 1}
+                    {done.includes(i) ? " · COMPLETE" : ""}
+                  </small>
+                  {lesson.replace(/^Module \d+:\s*/, "")}
+                </span>
+              </button>
+            ))}
+          </aside>
         </div>
-
-      </div>
+      </section>
     </div>
   );
 }

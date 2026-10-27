@@ -1,1348 +1,1394 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Search, 
-  ShoppingCart, 
-  User, 
-  LogOut, 
-  BookOpen, 
-  Check, 
-  ArrowLeft, 
-  Layers, 
-  Clock, 
-  Star, 
-  Trash2, 
-  CheckCircle2, 
-  GraduationCap, 
-  Sparkles, 
-  Award, 
-  CreditCard, 
-  Plus, 
-  SlidersHorizontal, 
-  ArrowUpDown, 
-  RotateCcw, 
-  ChevronDown, 
-  ChevronUp, 
-  ChevronLeft, 
-  ChevronRight,
-  Users, 
-  Wrench,
-  ShieldCheck
-} from 'lucide-react';
-import { loadCourses } from '../../utils/csvLoader';
-import defaultHeroImg from '../../assets/hero.png';
-import CustomerExperience from './CustomerExperience';
-import EnrollmentCelebration from './EnrollmentCelebration';
-import CompletionModal from './CompletionModal';
-import CertificateModal from './CertificateModal';
-import { sampleOrders, sampleTickets, sampleReviews } from '../../data/customerMockData';
-import Footer from '../Footer';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Award,
+  BookOpen,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  Clock3,
+  Compass,
+  GraduationCap,
+  Heart,
+  HelpCircle,
+  LayoutGrid,
+  LogOut,
+  Menu,
+  Search,
+  ShieldCheck,
+  ShoppingBag,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
+import { loadCourses } from "../../utils/csvLoader";
+import { completeModule, completedModules } from "../../utils/learning";
+import useDialog from "../../hooks/useDialog";
+import CustomerExperience from "./CustomerExperience";
+import CoursePlayerModal from "./CoursePlayerModal";
+import EnrollmentCelebration from "./EnrollmentCelebration";
+import CertificateModal from "./CertificateModal";
+import {
+  sampleOrders,
+  sampleTickets,
+  sampleReviews,
+} from "../../data/customerMockData";
+import fallbackImage from "../../assets/hero.png";
 
-// Rich Category color accents
-const CATEGORY_COLORS = {
-  'Motion Graphics': { bg: 'rgba(192, 132, 252, 0.18)', text: '#c084fc', border: 'rgba(192, 132, 252, 0.4)' },
-  '3D & CGI': { bg: 'rgba(56, 189, 248, 0.18)', text: '#38bdf8', border: 'rgba(56, 189, 248, 0.4)' },
-  'UX/UI & Product': { bg: 'rgba(251, 191, 36, 0.18)', text: '#fbbf24', border: 'rgba(251, 191, 36, 0.4)' },
-  'UX/UI Design': { bg: 'rgba(251, 191, 36, 0.18)', text: '#fbbf24', border: 'rgba(251, 191, 36, 0.4)' },
-  'Game Dev & CGI': { bg: 'rgba(244, 63, 94, 0.18)', text: '#fb7185', border: 'rgba(244, 63, 94, 0.4)' },
-  'Game Development': { bg: 'rgba(244, 63, 94, 0.18)', text: '#fb7185', border: 'rgba(244, 63, 94, 0.4)' },
-  'Spatial Audio': { bg: 'rgba(16, 185, 129, 0.18)', text: '#34d399', border: 'rgba(16, 185, 129, 0.4)' },
-  'VFX & Post': { bg: 'rgba(99, 102, 241, 0.18)', text: '#818cf8', border: 'rgba(99, 102, 241, 0.4)' },
-  'Digital Art': { bg: 'rgba(244, 114, 182, 0.18)', text: '#f472b6', border: 'rgba(244, 114, 182, 0.4)' },
-  'Creative Tech': { bg: 'rgba(167, 139, 250, 0.18)', text: '#a78bfa', border: 'rgba(167, 139, 250, 0.4)' },
-  'Post-Production': { bg: 'rgba(251, 146, 60, 0.18)', text: '#fb923c', border: 'rgba(251, 146, 60, 0.4)' },
-  '2D Animation': { bg: 'rgba(45, 212, 191, 0.18)', text: '#2dd4bf', border: 'rgba(45, 212, 191, 0.4)' }
-};
-
-const readStoredList = (key, fallback = [], legacyKey = null) => {
+const money = (amount) =>
+  new Intl.NumberFormat("en-ZA", {
+    style: "currency",
+    currency: "ZAR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+const DEMO_EMAIL = "jane.smith@createit.academy";
+const read = (key, fallback) => {
   try {
-    const saved = localStorage.getItem(key) ?? (legacyKey ? localStorage.getItem(legacyKey) : null);
-    const value = saved === null ? fallback : JSON.parse(saved);
+    const value = JSON.parse(localStorage.getItem(key));
     return Array.isArray(value) ? value : fallback;
   } catch {
     return fallback;
   }
 };
+const imageFallback = (e) => {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = fallbackImage;
+};
+const categoryColors = {
+  "Motion Graphics": "#c3a5ff",
+  "3D & CGI": "#9fc5ff",
+  "UX/UI Design": "#e2c48e",
+  "Game Development": "#c0d4a8",
+  "Spatial Audio": "#9bd9ca",
+  "Digital Art": "#e5a9c5",
+};
 
-export default function ProductsView({ user, onUpdateUser, onLogout, onShowToast, onNavigateView }) {
-  const accountId = (user?.id || user?.email || 'demo-jane').toLowerCase();
-  const storagePrefix = `createit_${encodeURIComponent(accountId)}_`;
-  const legacyKey = (name) => accountId === 'jane.smith@createit.academy' ? `createit_${name}` : null;
+function CourseImage({ course, className = "" }) {
+  return (
+    <img
+      src={course.image}
+      alt=""
+      loading="lazy"
+      className={className}
+      onError={imageFallback}
+    />
+  );
+}
+function EmptyState({ icon: Icon = BookOpen, title, text, action, onAction }) {
+  return (
+    <div className="fd-empty">
+      <span>
+        <Icon size={30} />
+      </span>
+      <h2>{title}</h2>
+      <p>{text}</p>
+      {action && (
+        <button className="fd-primary" onClick={onAction}>
+          {action} <ArrowRight size={16} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Checkout({ cart, total, onClose, onConfirm }) {
+  const ref = useRef(null);
+  useDialog(true, onClose, ref);
+  return (
+    <div
+      className="fd-overlay"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="fd-checkout"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-title"
+        ref={ref}
+        tabIndex={-1}
+      >
+        <button
+          className="fd-close"
+          aria-label="Close checkout"
+          onClick={onClose}
+        >
+          <X size={20} />
+        </button>
+        <span className="fd-kicker">ONE STEP CLOSER</span>
+        <h2 id="checkout-title">Ready to make something?</h2>
+        <p className="fd-muted">Review your courses, then make it official.</p>
+        <ol className="fd-checkout-steps">
+          <li>
+            <CheckCircle2 size={16} /> Your cart
+          </li>
+          <li aria-current="step">2. Review & confirm</li>
+          <li>3. Start learning</li>
+        </ol>
+        <div className="fd-demo-note">
+          <ShieldCheck size={22} />
+          <div>
+            <strong>This is a demonstration. No payment is required.</strong>
+            <p>
+              No payment details are collected. Confirming saves a demo receipt
+              and adds these courses to My Learning.
+            </p>
+          </div>
+        </div>
+        <div className="fd-order-items">
+          {cart.map((c) => (
+            <div key={c.id}>
+              <span>{c.title}</span>
+              <strong>{money(c.price)}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="fd-total">
+          <span>Order total</span>
+          <strong>{money(total)}</strong>
+        </div>
+        <p className="fd-muted fd-small">
+          Simulated total · You will not be charged.
+        </p>
+        <button className="fd-primary fd-wide" onClick={onConfirm}>
+          Confirm demo order <ArrowRight size={17} />
+        </button>
+        <button className="fd-text-button fd-wide" onClick={onClose}>
+          Back to cart
+        </button>
+      </section>
+    </div>
+  );
+}
+
+export default function ProductsView({
+  user,
+  onUpdateUser,
+  onLogout,
+  onShowToast,
+  onNavigateView,
+}) {
+  const prefix = `createit_${encodeURIComponent((user.id || user.email).toLowerCase())}_`;
+  const demo = user.email === DEMO_EMAIL;
   const [courses, setCourses] = useState([]);
-  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('view') === 'customer' ? 'customer' : 'catalog');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
-  const [expandedCurriculums, setExpandedCurriculums] = useState({});
-  const [orders, setOrders] = useState(() => readStoredList(`${storagePrefix}orders`, sampleOrders, legacyKey('orders')));
-  const [tickets, setTickets] = useState(() => readStoredList(`${storagePrefix}tickets`, sampleTickets, legacyKey('tickets')));
-  const [reviews, setReviews] = useState(() => readStoredList(`${storagePrefix}reviews`, sampleReviews, legacyKey('reviews')));
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [customerSection, setCustomerSection] = useState('overview');
-  const [newOrderId, setNewOrderId] = useState(null);
-  const [celebrationOpen, setCelebrationOpen] = useState(false);
-  const [celebrationCourses, setCelebrationCourses] = useState([]);
-  const [completionCourseId, setCompletionCourseId] = useState(null);
-  const [progressBursts, setProgressBursts] = useState({});
-  const [certificateCourseId, setCertificateCourseId] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState(() =>
+    new URLSearchParams(location.search).get("view") === "customer"
+      ? "customer"
+      : "catalog",
+  );
+  const [section, setSection] = useState("overview");
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const [sort, setSort] = useState("popular");
+  const [level, setLevel] = useState("all");
+  const [price, setPrice] = useState("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [cart, setCart] = useState(() => read(`${prefix}cart`, []));
+  const [wishlist, setWishlist] = useState(() => read(`${prefix}wishlist`, []));
+  const [enrolled, setEnrolled] = useState(() =>
+    read(
+      `${prefix}enrolled`,
+      demo
+        ? [
+            { courseId: "1", progress: 50 },
+            { courseId: "2", progress: 25 },
+          ]
+        : [],
+    ),
+  );
+  const [orders, setOrders] = useState(() =>
+    read(`${prefix}orders`, demo ? sampleOrders : []),
+  );
+  const [tickets, setTickets] = useState(() =>
+    read(`${prefix}tickets`, demo ? sampleTickets : []),
+  );
+  const [reviews, setReviews] = useState(() =>
+    read(`${prefix}reviews`, demo ? sampleReviews : []),
+  );
+  const [notes, setNotes] = useState(() => {
     try {
-      return localStorage.getItem('createit_sidebar_collapsed') === 'true';
+      return JSON.parse(localStorage.getItem(`${prefix}notes`)) || {};
     } catch {
-      return false;
+      return {};
     }
   });
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [celebration, setCelebration] = useState(null);
+  const [certificateId, setCertificateId] = useState(null);
+  const [playerId, setPlayerId] = useState(null);
+  const [newOrderId, setNewOrderId] = useState(null);
+  const mainRef = useRef(null);
 
+  useEffect(() => {
+    let mounted = true;
+    loadCourses().then((data) => {
+      if (mounted) {
+        setCourses(data);
+        setLoading(false);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
   useEffect(() => {
     try {
-      localStorage.setItem('createit_sidebar_collapsed', String(sidebarCollapsed));
-    } catch {}
-  }, [sidebarCollapsed]);
-  
-  // Sort, Level & Price filters
-  const [sortBy, setSortBy] = useState('popular'); // 'popular', 'price-asc', 'price-desc', 'rating', 'title'
-  const [levelFilter, setLevelFilter] = useState('all'); // 'all', 'Beginner', 'Intermediate', 'Advanced'
-  const [priceFilter, setPriceFilter] = useState('all'); // 'all', 'under600', '600-750', 'above750'
+      Object.entries({
+        cart,
+        wishlist,
+        enrolled,
+        orders,
+        tickets,
+        reviews,
+        notes,
+      }).forEach(([key, value]) =>
+        localStorage.setItem(`${prefix}${key}`, JSON.stringify(value)),
+      );
+    } catch {
+      onShowToast(
+        "Browser storage is unavailable. Keep this tab open to retain your changes.",
+        "error",
+      );
+    }
+  }, [
+    cart,
+    wishlist,
+    enrolled,
+    orders,
+    tickets,
+    reviews,
+    notes,
+    prefix,
+    onShowToast,
+  ]);
 
-  // Cart & Enrolled state with localStorage persistence
-  const [cart, setCart] = useState(() => {
-    return readStoredList(`${storagePrefix}cart`, [], legacyKey('cart'));
-  });
+  const navigate = (target, accountSection = "overview") => {
+    setTab(target);
+    setSection(accountSection);
+    setSelectedId(null);
+    setMobileOpen(false);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
+  const openCourse = (id) => {
+    setSelectedId(id);
+    setMobileOpen(false);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
+  const reset = () => {
+    setQuery("");
+    setCategory("All");
+    setLevel("all");
+    setPrice("all");
+    setSort("popular");
+  };
+  const categories = ["All", ...new Set(courses.map((c) => c.category))];
+  const activeFilters =
+    category !== "All" || level !== "all" || price !== "all" || query.trim();
+  const filtered = useMemo(
+    () =>
+      courses
+        .filter((c) => {
+          const searchable = [
+            c.title,
+            c.description,
+            c.category,
+            c.instructor,
+            ...c.tools,
+          ]
+            .join(" ")
+            .toLowerCase();
+          return (
+            (!query.trim() ||
+              searchable.includes(query.trim().toLowerCase())) &&
+            (category === "All" || c.category === category) &&
+            (level === "all" ||
+              c.level.toLowerCase().includes(level) ||
+              c.level === "All Levels") &&
+            (price === "all" ||
+              (price === "under600"
+                ? c.price < 600
+                : price === "600-750"
+                  ? c.price >= 600 && c.price <= 750
+                  : c.price > 750))
+          );
+        })
+        .sort((a, b) =>
+          sort === "price-asc"
+            ? a.price - b.price
+            : sort === "price-desc"
+              ? b.price - a.price
+              : sort === "title"
+                ? a.title.localeCompare(b.title)
+                : sort === "rating"
+                  ? b.rating - a.rating
+                  : parseFloat(b.students) - parseFloat(a.students),
+        ),
+    [courses, query, category, level, price, sort],
+  );
+  const course = courses.find((c) => c.id === selectedId);
+  const player = courses.find((c) => c.id === playerId);
+  const total = cart.reduce((sum, c) => sum + c.price, 0);
+  const completed = enrolled.filter((e) => e.progress >= 100);
+  const next = enrolled.find((e) => e.progress < 100);
+  const nextCourse = courses.find((c) => c.id === next?.courseId);
+  const isEnrolled = (id) => enrolled.some((e) => e.courseId === id);
+  const inCart = (id) => cart.some((c) => c.id === id);
 
-  const [enrolled, setEnrolled] = useState(() => {
-    return readStoredList(`${storagePrefix}enrolled`, [
-      { courseId: '1', progress: 65 },
-      { courseId: '2', progress: 30 }
-    ], legacyKey('enrolled'));
-  });
-
-  // Load CSV data on mount dynamically from /courses.csv
-  useEffect(() => {
-    loadCourses().then((data) => {
-      setCourses(data);
-    });
-  }, []);
-
-  // Sync state to localStorage
-  useEffect(() => {
-    localStorage.setItem(`${storagePrefix}cart`, JSON.stringify(cart));
-  }, [cart, storagePrefix]);
-
-  useEffect(() => {
-    localStorage.setItem(`${storagePrefix}enrolled`, JSON.stringify(enrolled));
-  }, [enrolled, storagePrefix]);
-
-  useEffect(() => { localStorage.setItem(`${storagePrefix}orders`, JSON.stringify(orders)); }, [orders, storagePrefix]);
-  useEffect(() => { localStorage.setItem(`${storagePrefix}tickets`, JSON.stringify(tickets)); }, [tickets, storagePrefix]);
-  useEffect(() => { localStorage.setItem(`${storagePrefix}reviews`, JSON.stringify(reviews)); }, [reviews, storagePrefix]);
-
-  // Unique categories derived dynamically from loaded courses
-  const categories = useMemo(() => {
-    const set = new Set(courses.map(c => c.category).filter(Boolean));
-    return ['All', ...Array.from(set)];
-  }, [courses]);
-
-  // Filtered & Sorted courses for the Searchable List
-  const filteredCourses = useMemo(() => {
-    return courses.filter(c => {
-      // Category filter
-      if (selectedCategory !== 'All' && c.category !== selectedCategory) {
-        return false;
-      }
-
-      // Level filter
-      if (levelFilter !== 'all') {
-        const cLevel = (c.level || '').toLowerCase();
-        if (levelFilter === 'Beginner' && !cLevel.includes('beginner') && !cLevel.includes('all')) return false;
-        if (levelFilter === 'Intermediate' && !cLevel.includes('intermediate') && !cLevel.includes('all')) return false;
-        if (levelFilter === 'Advanced' && !cLevel.includes('advanced')) return false;
-      }
-
-      // Price range filter (in Rands)
-      if (priceFilter === 'under600' && c.price >= 600) return false;
-      if (priceFilter === '600-750' && (c.price < 600 || c.price > 750)) return false;
-      if (priceFilter === 'above750' && c.price <= 750) return false;
-
-      // Real-time Search Query across title, category, instructor, description, tools, and lessons
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchTitle = (c.title || '').toLowerCase().includes(q);
-        const matchCat = (c.category || '').toLowerCase().includes(q);
-        const matchInst = (c.instructor || '').toLowerCase().includes(q);
-        const matchDesc = (c.description || '').toLowerCase().includes(q);
-        const matchTools = Array.isArray(c.tools) ? c.tools.some(t => t.toLowerCase().includes(q)) : false;
-        const matchLessons = Array.isArray(c.lessons) ? c.lessons.some(l => l.toLowerCase().includes(q)) : false;
-
-        if (!matchTitle && !matchCat && !matchInst && !matchDesc && !matchTools && !matchLessons) {
-          return false;
-        }
-      }
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'popular') return (b.rating || 0) - (a.rating || 0);
-      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
-      if (sortBy === 'price-asc') return (a.price || 0) - (b.price || 0);
-      if (sortBy === 'price-desc') return (b.price || 0) - (a.price || 0);
-      if (sortBy === 'title') return (a.title || '').localeCompare(b.title || '');
-      return 0;
-    });
-  }, [courses, selectedCategory, searchQuery, sortBy, levelFilter, priceFilter]);
-
-  // Selected course object for full description view
-  const selectedCourse = courses.find(c => c.id === selectedCourseId);
-
-  // Cart actions
-  const handleToggleCart = (course, e) => {
-    if (e) e.stopPropagation();
-    if (enrolled.some(item => item.courseId === course.id)) {
-      onShowToast?.('This course is already in My Learning.', 'info');
+  const addCart = (c) => {
+    if (isEnrolled(c.id)) {
+      navigate("dashboard");
       return;
     }
-    if (cart.some(item => item.id === course.id)) {
-      setCart(cart.filter(item => item.id !== course.id));
-      onShowToast?.(`Removed "${course.title}" from cart.`, 'info');
-    } else {
-      setCart([...cart, course]);
-      onShowToast?.(`Added "${course.title}" to cart!`, 'success');
+    if (inCart(c.id)) {
+      navigate("cart");
+      return;
     }
+    setCart((prev) => [...prev, c]);
+    onShowToast(`Added to your cart: ${c.title}`, "success");
   };
-
-  const handleRemoveFromCart = (courseId) => {
-    setCart(cart.filter(item => item.id !== courseId));
-    onShowToast?.('Item removed from cart.', 'info');
+  const toggleWishlist = (id) => {
+    setWishlist((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
   };
-
-  const handleCheckout = () => {
-    if (cart.length === 0) return;
-
-    // Snapshot the cart before clearing it, so the celebration can use it
-    const purchasedCourses = [...cart];
-
+  const confirmOrder = () => {
+    if (!cart.length) return;
     const order = {
       id: `CIT-${Date.now().toString().slice(-8)}`,
       createdAt: new Date().toISOString(),
-      items: cart.map(({ id, title, price }) => ({ id, title, price })),
-      total: cart.reduce((sum, item) => sum + item.price, 0)
+      items: cart.map(({ id, title, price: cost }) => ({
+        id,
+        title,
+        price: cost,
+      })),
+      total,
     };
-    const newEnrolled = [...enrolled];
-    cart.forEach(item => {
-      if (!newEnrolled.some(e => e.courseId === item.id)) {
-        newEnrolled.push({ courseId: item.id, progress: 0 });
-      }
-    });
-    setEnrolled(newEnrolled);
-    setOrders(prev => [order, ...prev]);
+    setOrders((prev) => [order, ...prev]);
+    setEnrolled((prev) => [
+      ...prev,
+      ...cart
+        .filter((c) => !prev.some((e) => e.courseId === c.id))
+        .map((c) => ({
+          courseId: c.id,
+          progress: 0,
+          completedModules: [],
+          currentModule: 0,
+        })),
+    ]);
     setNewOrderId(order.id);
+    setCelebration({ courses: [...cart], orderId: order.id });
     setCart([]);
     setCheckoutOpen(false);
-
-    // Show the celebration overlay instead of jumping straight to the customer hub
-    setCelebrationCourses(purchasedCourses);
-    setCelebrationOpen(true);
+    navigate("dashboard");
   };
-
-  const handleInstantEnroll = (course, e) => {
-    if (e) e.stopPropagation();
-    if (enrolled.some(item => item.courseId === course.id)) {
-      setActiveTab('dashboard');
-      setSelectedCourseId(null);
-      return;
-    }
-    if (!cart.some(item => item.id === course.id)) setCart(prev => [...prev, course]);
-    setActiveTab('cart');
-    setSelectedCourseId(null);
-    onShowToast?.(`"${course.title}" is ready for checkout.`, 'success');
-  };
-
-  const handleCelebrationStartLearning = () => {
-    setCelebrationOpen(false);
-    setCelebrationCourses([]);
-    setSelectedCourseId(null);
-    setActiveTab('dashboard');
-    onShowToast?.('Your learning dashboard is ready.', 'success');
-  };
-
-  const handleCelebrationClose = () => {
-    setCelebrationOpen(false);
-    setCelebrationCourses([]);
-    setSelectedCourseId(null);
-    setActiveTab('customer');
-    onShowToast?.('Your courses are ready. Scroll down to see your receipt.', 'info');
-  };
-
-  // Progress actions with milestone feedback
-  const handleIncreaseProgress = (courseId) => {
-    const course = courses.find(c => c.id === courseId);
-    let newProgress = 0;
-    let previousProgress = 0;
-
-    setEnrolled(prev => prev.map(item => {
-      if (item.courseId === courseId) {
-        previousProgress = item.progress;
-        newProgress = Math.min(100, item.progress + 25);
-        return { ...item, progress: newProgress };
-      }
-      return item;
-    }));
-
-    // Trigger the floating +25% badge
-    setProgressBursts(prev => ({
-      ...prev,
-      [courseId]: { amount: 25, key: Date.now() }
-    }));
-
-    // Clean up the burst after the animation finishes
-    setTimeout(() => {
-      setProgressBursts(prev => {
-        const next = { ...prev };
-        delete next[courseId];
-        return next;
-      });
-    }, 1200);
-
-    // Milestone-specific feedback
-    if (newProgress >= 100) {
-      // Fire the completion modal (once per course, on reaching 100)
-      if (previousProgress < 100) {
-        setCompletionCourseId(courseId);
-      }
-      onShowToast?.(
-        course ? `Course complete: ${course.title}` : 'Course complete!',
-        'success'
-      );
-    } else if (newProgress === 75) {
-      onShowToast?.('Almost there! 75% complete.', 'success');
-    } else if (newProgress === 50) {
-      onShowToast?.('Halfway there! 50% complete.', 'success');
-    } else if (newProgress === 25) {
-      onShowToast?.('First milestone! 25% complete.', 'success');
+  const finishModule = (id, index) => {
+    const c = courses.find((item) => item.id === id);
+    const entry = enrolled.find((e) => e.courseId === id);
+    if (!c || !entry) return;
+    const updated = completeModule(entry, index, c.lessons.length);
+    if (updated === entry) return;
+    setEnrolled((prev) => prev.map((e) => (e.courseId === id ? updated : e)));
+    if (updated.progress === 100 && entry.progress < 100) {
+      setPlayerId(null);
+      setCertificateId(id);
+      onShowToast("Course complete! Your certificate is ready.", "success");
     } else {
-      onShowToast?.(`Progress updated to ${newProgress}%.`, 'success');
+      const message =
+        updated.progress === 25
+          ? "Your first milestone! 25% complete."
+          : updated.progress === 50
+            ? "Halfway there! 50% complete."
+            : updated.progress === 75
+              ? "Almost there! 75% complete."
+              : `Module complete. ${updated.progress}% of your course finished.`;
+      onShowToast(message, "success");
     }
   };
-
-  const handleCloseCompletion = () => {
-    setCompletionCourseId(null);
-  };
-
-  const handleClaimCertificate = () => {
-    const courseId = completionCourseId;
-    setCompletionCourseId(null);
-    setCertificateCourseId(courseId);
-  };
-
-  const handleOpenCertificate = (courseId) => {
-    setCertificateCourseId(courseId);
-  };
-
-  const handleCloseCertificate = () => {
-    setCertificateCourseId(null);
-  };
-
-  const toggleCurriculumAccordion = (courseId, e) => {
-    if (e) e.stopPropagation();
-    setExpandedCurriculums(prev => ({
-      ...prev,
-      [courseId]: !prev[courseId]
-    }));
-  };
-
-  const handleResetFilters = () => {
-    setSelectedCategory('All');
-    setSortBy('popular');
-    setLevelFilter('all');
-    setPriceFilter('all');
-    setSearchQuery('');
-  };
-
-  const handleTagCategoryClick = (category, e) => {
-    if (e) e.stopPropagation();
-    setSelectedCourseId(null);
-    setSelectedCategory(category);
-    setSearchQuery('');
-    setActiveTab('catalog');
-  };
-
-  const handleTagToolClick = (tool, e) => {
-    if (e) e.stopPropagation();
-    setSelectedCourseId(null);
-    setSelectedCategory('All');
-    setSearchQuery(tool);
-    setActiveTab('catalog');
-  };
-
-  const hasActiveFilters = selectedCategory !== 'All' || sortBy !== 'popular' || levelFilter !== 'all' || priceFilter !== 'all' || searchQuery.trim() !== '';
-
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
-  const completedCount = enrolled.filter(e => e.progress >= 100).length;
-  const inProgressCount = enrolled.filter(e => e.progress < 100).length;
-  const totalModules = enrolled.reduce((sum, item) => sum + (courses.find(course => course.id === item.courseId)?.lessons?.length || 0), 0);
+  const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
+  const closePlayer = useCallback(() => setPlayerId(null), []);
+  const closeCertificate = useCallback(() => setCertificateId(null), []);
+  const closeCelebration = useCallback(() => {
+    setCelebration(null);
+    setTab("customer");
+    setSection("orders");
+  }, []);
+  const startLearning = useCallback(() => {
+    setCelebration(null);
+    setTab("dashboard");
+  }, []);
+  const renderCard = (c) => (
+    <article className="fd-course-card" key={c.id}>
+      <div className="fd-course-cover">
+        <button
+          className="fd-image-link"
+          aria-label={`View ${c.title}`}
+          onClick={() => openCourse(c.id)}
+        >
+          <CourseImage course={c} />
+        </button>
+        {c.badge && (
+          <span className="fd-cover-badge">
+            {c.badge === "Popular" || c.badge === "Bestseller" ? (
+              <Sparkles size={12} />
+            ) : null}
+            {c.badge}
+          </span>
+        )}
+        <button
+          className={`fd-heart ${wishlist.includes(c.id) ? "saved" : ""}`}
+          aria-label={`${wishlist.includes(c.id) ? "Remove from" : "Save to"} wishlist: ${c.title}`}
+          aria-pressed={wishlist.includes(c.id)}
+          onClick={() => toggleWishlist(c.id)}
+        >
+          <Heart
+            size={17}
+            fill={wishlist.includes(c.id) ? "currentColor" : "none"}
+          />
+        </button>
+      </div>
+      <div className="fd-course-body">
+        <div className="fd-course-topline">
+          <span style={{ color: categoryColors[c.category] || "#c2b5eb" }}>
+            {c.category}
+          </span>
+          <span className="fd-rating">
+            <Star size={12} fill="currentColor" /> {c.rating.toFixed(1)}
+          </span>
+        </div>
+        <h3>
+          <button onClick={() => openCourse(c.id)}>{c.title}</button>
+        </h3>
+        <p className="fd-instructor">with {c.instructor}</p>
+        <div className="fd-course-meta">
+          <span>
+            <Clock3 size={13} />
+            {c.duration}
+          </span>
+          <span>
+            <BookOpen size={13} />
+            {c.lessons.length} modules
+          </span>
+          <span>{c.level === "Beginner to Pro" ? "Beginner" : c.level}</span>
+        </div>
+        <div className="fd-course-bottom">
+          <div>
+            <strong>{money(c.price)}</strong>
+            <small>One-time purchase</small>
+          </div>
+          <button
+            className={`fd-add ${inCart(c.id) || isEnrolled(c.id) ? "added" : ""}`}
+            onClick={() => addCart(c)}
+          >
+            {isEnrolled(c.id)
+              ? "Start learning"
+              : inCart(c.id)
+                ? "View cart"
+                : "Add to cart"}{" "}
+            {isEnrolled(c.id) ? (
+              <ArrowRight size={14} />
+            ) : inCart(c.id) ? (
+              <Check size={14} />
+            ) : (
+              <ShoppingBag size={14} />
+            )}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
 
   return (
-    <div className="sleek-app-root">
-      
-      {/* Floating Top Navbar */}
-      <header className="sleek-floating-top-nav">
-        
-        {/* Brand + Sidebar toggle */}
-        <div className="navbar-left-group">
+    <div className="fd-app">
+      <a className="fd-skip" href="#main-content">
+        Skip to content
+      </a>
+      <header className="fd-header">
+        <button
+          className="fd-menu-toggle fd-icon-button"
+          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+          aria-expanded={mobileOpen}
+          aria-controls="main-navigation"
+          onClick={() => setMobileOpen((v) => !v)}
+        >
+          {mobileOpen ? <X size={21} /> : <Menu size={21} />}
+        </button>
+        <button
+          className="fd-brand"
+          onClick={() => navigate("catalog")}
+          aria-label="Create.IT home"
+        >
+          <span className="fd-brand-symbol">
+            <Sparkles size={21} />
+          </span>
+          Create<span className="fd-brand-dot">.IT</span>
+        </button>
+        <span className="fd-header-divider" />
+        <span className="fd-header-caption">
+          A little curiosity. A lot of possibility.
+        </span>
+        <div className="fd-header-right">
+          <span className="fd-demo-label">
+            <span /> DEMO WORKSPACE
+          </span>
           <button
-            type="button"
-            className="sidebar-toggle-btn"
-            onClick={() => setSidebarCollapsed(prev => !prev)}
-            title={sidebarCollapsed ? 'Open navigation' : 'Collapse navigation'}
-            aria-label={sidebarCollapsed ? 'Open navigation' : 'Collapse navigation'}
-            aria-expanded={!sidebarCollapsed}
+            className="fd-header-cart"
+            aria-label={`Shopping cart, ${cart.length} courses`}
+            onClick={() => navigate("cart")}
           >
-            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            <ShoppingBag size={19} />
+            <span className="fd-cart-label">Cart</span>
+            {cart.length > 0 && <b>{cart.length}</b>}
           </button>
-
-          <div className="navbar-left-brand" onClick={() => { setActiveTab('catalog'); setSelectedCourseId(null); }}>
-            <div className="brand-icon-gem">
-              <Sparkles size={18} color="#ffffff" />
-            </div>
-            <h2 className="brand-logo-text">
-              Create<span>.IT</span>
-            </h2>
-          </div>
-        </div>
-
-        {/* Global Live Search Bar */}
-        <div className="navbar-search-pill">
-          <Search size={16} className="search-icon-inside" />
-          <input 
-            type="text"
-            placeholder="Search creative programs, tools, instructors..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              if (selectedCourseId) setSelectedCourseId(null);
-              if (activeTab !== 'catalog') setActiveTab('catalog');
-            }}
-            className="sleek-search-input"
-          />
-          {searchQuery && (
-            <button 
-              type="button" 
-              className="btn-clear-search-mini"
-              onClick={() => setSearchQuery('')}
-              title="Clear search"
-            >
-              ×
-            </button>
-          )}
-        </div>
-
-        {/* Right Actions: Shopping Cart & User Profile */}
-        <div className="navbar-right-actions">
-          
-          <button 
-            type="button" 
-            className={`sleek-vibrant-cart-btn ${activeTab === 'cart' ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedCourseId(null);
-              setActiveTab('cart');
-            }}
+          <button
+            className="fd-avatar"
+            aria-label="Open my profile"
+            onClick={() => navigate("customer", "profile")}
           >
-            <div className="cart-btn-icon-box">
-              <ShoppingCart size={16} />
-              {cart.length > 0 && <span className="cart-btn-badge-dot">{cart.length}</span>}
-            </div>
-            <div className="cart-btn-text-box">
-              <span className="cart-btn-label">Cart ({cart.length})</span>
-              <strong className="cart-btn-rands">R{cartTotal.toFixed(2)}</strong>
-            </div>
-          </button>
-
-          <div className="sleek-user-pill">
-            <div className="user-avatar-gradient">
-              <User size={15} />
-            </div>
-            <span className="user-name-label">{user?.name || 'Jane Smith'}</span>
-          </div>
-
-          <button 
-            type="button" 
-            className="sleek-btn-logout"
-            onClick={onLogout}
-            title="Sign out"
-          >
-            <LogOut size={16} />
+            {user.name
+              .split(" ")
+              .map((s) => s[0])
+              .slice(0, 2)
+              .join("")}
           </button>
         </div>
       </header>
-
-      {/* App Body with Floating Sidebar and Main Workspace */}
-      <div className="sleek-workspace-body">
-        
-        {/* Floating Side Navigation */}
-        <aside className={`sleek-floating-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-          
-          {/* Navigation Menu */}
-          <div className="sidebar-nav-section">
-            <span className="sidebar-heading-label">NAVIGATION</span>
-            
-            <button 
-              type="button" 
-              className={`sleek-nav-item ${activeTab === 'catalog' && selectedCategory === 'All' ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedCourseId(null);
-                setSelectedCategory('All');
-                setActiveTab('catalog');
-              }}
-            >
-              <div className="nav-icon-wrap" style={{ color: '#818cf8' }}>
-                <BookOpen size={16} />
-              </div>
-              <span className="nav-text">Searchable Catalog</span>
-            </button>
-
-            <button 
-              type="button" 
-              className={`sleek-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedCourseId(null);
-                setActiveTab('dashboard');
-              }}
-            >
-              <div className="nav-icon-wrap" style={{ color: '#38bdf8' }}>
-                <GraduationCap size={16} />
-              </div>
-              <span className="nav-text">My Learning</span>
-              {enrolled.length > 0 && (
-                <span className="nav-count-pill">{enrolled.length}</span>
-              )}
-            </button>
-
+      {mobileOpen && (
+        <button
+          className="fd-nav-scrim"
+          aria-label="Close navigation"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+      <aside
+        className={`fd-sidebar ${mobileOpen ? "is-open" : ""}`}
+        id="main-navigation"
+      >
+        <span className="fd-sidebar-label">YOUR CREATIVE SPACE</span>
+        <nav aria-label="Main navigation">
+          {[
+            [Compass, "catalog", "Explore courses"],
+            [GraduationCap, "dashboard", "My Learning"],
+            [Heart, "wishlist", "Wishlist"],
+            [Award, "certificates", "Certificates"],
+          ].map(([Icon, id, label]) => (
             <button
-              type="button"
-              className={`sleek-nav-item ${activeTab === 'customer' ? 'active' : ''}`}
-              onClick={() => { setSelectedCourseId(null); setActiveTab('customer'); }}
+              key={id}
+              className={tab === id ? "active" : ""}
+              aria-current={tab === id ? "page" : undefined}
+              onClick={() => navigate(id)}
             >
-              <div className="nav-icon-wrap" style={{ color: '#fbbf24' }}><User size={16} /></div>
-              <span className="nav-text">Customer Experience</span>
-            </button>
-
-            <button 
-              type="button" 
-              className={`sleek-nav-item ${activeTab === 'cart' ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedCourseId(null);
-                setActiveTab('cart');
-              }}
-            >
-              <div className="nav-icon-wrap" style={{ color: '#34d399' }}>
-                <ShoppingCart size={16} />
-              </div>
-              <span className="nav-text">Shopping Cart</span>
-              {cart.length > 0 && (
-                <span className="nav-count-pill badge-emerald">{cart.length}</span>
+              <Icon size={18} />
+              <span>{label}</span>
+              {id === "dashboard" && enrolled.length > 0 && (
+                <b>{enrolled.length}</b>
               )}
+              {id === "wishlist" && wishlist.length > 0 && (
+                <b>{wishlist.length}</b>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="fd-sidebar-rule" />
+        <span className="fd-sidebar-label">HERE TO HELP</span>
+        <nav aria-label="Account navigation">
+          <button
+            className={
+              tab === "customer" && section === "orders" ? "active" : ""
+            }
+            onClick={() => navigate("customer", "orders")}
+          >
+            <ShoppingBag size={18} />
+            Purchase history
+          </button>
+          <button
+            className={
+              tab === "customer" && section === "support" ? "active" : ""
+            }
+            onClick={() => navigate("customer", "support")}
+          >
+            <HelpCircle size={18} />
+            Help & support
+          </button>
+          <button
+            className={
+              tab === "customer" && section === "profile" ? "active" : ""
+            }
+            onClick={() => navigate("customer", "profile")}
+          >
+            <User size={18} />
+            My account
+          </button>
+        </nav>
+        <div className="fd-sidebar-bottom">
+          <div className="fd-creative-note">
+            <span>
+              <Sparkles size={17} /> A NOTE TO THE CREATOR
+            </span>
+            <p>Your next big idea starts with a small first step.</p>
+            <button onClick={() => navigate("dashboard")}>
+              Keep creating <ArrowRight size={15} />
             </button>
           </div>
-
-          {activeTab === 'customer' && <div className="cx-sidebar-card">
-            <span className="cx-section-kicker">MY WORKSPACE</span>
-            <div className="cx-sidebar-avatar"><User size={22} /></div>
-            <strong>{user?.name || 'Creator'}</strong>
-            <small>{user?.email || 'Local prototype account'}</small>
-            <div className="cx-sidebar-rule" />
-            <span>{enrolled.length} courses in your learning space</span>
-            <button type="button" onClick={() => setActiveTab('dashboard')}>Open My Learning <ArrowLeft size={13} /></button>
-            <p>Activity is stored on this device.</p>
-          </div>}
-
-          {/* Sort & Filter Controls in Sidebar */}
-          {activeTab === 'catalog' && <div className="sidebar-nav-section sidebar-filters-box">
-            <div className="sidebar-heading-row">
-              <span className="sidebar-heading-label" style={{ paddingLeft: 0, marginBottom: 0 }}>
-                <SlidersHorizontal size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                SORT & FILTERS
-              </span>
-              {hasActiveFilters && (
-                <button type="button" className="btn-reset-filters-mini" onClick={handleResetFilters} title="Reset all filters">
-                  <RotateCcw size={11} /> Reset
-                </button>
-              )}
-            </div>
-
-            {/* Sort Dropdown */}
-            <div className="sidebar-filter-control">
-              <label className="filter-field-label">
-                <ArrowUpDown size={11} /> Sort by
-              </label>
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
-                className="sidebar-select-control"
-              >
-                <option value="popular">Most Popular</option>
-                <option value="rating">Highest Rated</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="title">Title: A - Z</option>
-              </select>
-            </div>
-
-            {/* Level Filter */}
-            <div className="sidebar-filter-control">
-              <label className="filter-field-label">
-                <GraduationCap size={11} /> Skill Level
-              </label>
-              <select 
-                value={levelFilter} 
-                onChange={(e) => setLevelFilter(e.target.value)}
-                className="sidebar-select-control"
-              >
-                <option value="all">All Levels</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-              </select>
-            </div>
-
-            {/* Price Range Filter */}
-            <div className="sidebar-filter-control">
-              <label className="filter-field-label">
-                <CreditCard size={11} /> Price Range
-              </label>
-              <select 
-                value={priceFilter} 
-                onChange={(e) => setPriceFilter(e.target.value)}
-                className="sidebar-select-control"
-              >
-                <option value="all">All Prices</option>
-                <option value="under600">Under R600</option>
-                <option value="600-750">R600 - R750</option>
-                <option value="above750">Above R750</option>
-              </select>
-            </div>
-          </div>}
-
-          {/* Department / Category Shortcuts */}
-          {activeTab === 'catalog' && <div className="sidebar-nav-section">
-            <span className="sidebar-heading-label">CREATIVE CATEGORIES</span>
-            {categories.map(cat => {
-              const catStyle = CATEGORY_COLORS[cat] || { text: '#a5b4fc' };
-              const isSelected = activeTab === 'catalog' && selectedCategory === cat;
-
-              return (
-                <button 
-                  key={cat}
-                  type="button" 
-                  className={`sleek-nav-item ${isSelected ? 'active' : ''}`}
-                  onClick={() => {
-                    setSelectedCourseId(null);
-                    setSelectedCategory(cat);
-                    setActiveTab('catalog');
-                  }}
-                >
-                  <div className="nav-icon-wrap" style={{ color: catStyle.text }}>
-                    <Layers size={14} />
-                  </div>
-                  <span className="nav-text">{cat}</span>
-                </button>
-              );
-            })}
-          </div>}
-
-        </aside>
-
-        {/* Main Content Area */}
-        <main className="sleek-main-workspace">
-          
-          {/* 1. Full Course Description & Syllabus View */}
-          {selectedCourseId && selectedCourse ? (
-            <div className="sleek-description-container">
-              
-              <button 
-                type="button" 
-                className="sleek-back-btn"
-                onClick={() => setSelectedCourseId(null)}
-              >
-                <ArrowLeft size={16} />
-                <span>Back to Searchable List</span>
-              </button>
-
-              <div className="sleek-detail-card">
-                
-                {/* Hero Banner */}
-                <div className="detail-banner-box">
-                  <img src={selectedCourse.image || defaultHeroImg} alt={selectedCourse.title} className="detail-banner-img" />
-                  <div className="detail-banner-gradient-overlay" />
-                  
-                  <div className="detail-banner-content">
-                    {(() => {
-                      const colorDef = CATEGORY_COLORS[selectedCourse.category] || { bg: 'rgba(99, 102, 241, 0.2)', text: '#818cf8', border: '#6366f1' };
-                      return (
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                          <button
-                            type="button"
-                            className="detail-cat-pill interactive-tag"
-                            style={{ backgroundColor: colorDef.bg, color: colorDef.text, borderColor: colorDef.border }}
-                            onClick={(e) => handleTagCategoryClick(selectedCourse.category, e)}
-                            title={`Filter by ${selectedCourse.category}`}
-                          >
-                            {selectedCourse.category}
-                          </button>
-                          {selectedCourse.badge && (
-                            <span className="list-row-badge-pill">
-                              <Sparkles size={11} /> {selectedCourse.badge}
-                            </span>
-                          )}
-                          <span className="list-row-level-tag" style={{ color: '#cbd5e1' }}>
-                            {selectedCourse.level}
-                          </span>
-                        </div>
-                      );
-                    })()}
-                    <h1 className="detail-title-text">{selectedCourse.title}</h1>
-                    <p className="detail-instructor-line">Lead Instructor: <strong>{selectedCourse.instructor}</strong></p>
+          <button className="fd-sidebar-user" onClick={onLogout}>
+            <span className="fd-avatar">{user.name[0]}</span>
+            <span>
+              <strong>{user.name}</strong>
+              <small>Sign out of workspace</small>
+            </span>
+            <LogOut size={16} />
+          </button>
+        </div>
+      </aside>
+      <main id="main-content" className="fd-main" ref={mainRef} tabIndex={-1}>
+        {loading ? (
+          <div className="fd-loading" role="status">
+            <Sparkles className="fd-spin" size={28} /> Finding your next
+            creative spark...
+          </div>
+        ) : course ? (
+          <div className="fd-detail">
+            <button
+              className="fd-text-button"
+              onClick={() => setSelectedId(null)}
+            >
+              <ArrowLeft size={16} /> Back to{" "}
+              {tab === "wishlist" ? "wishlist" : "courses"}
+            </button>
+            <div className="fd-detail-grid">
+              <div className="fd-detail-copy">
+                <span className="fd-kicker">{course.category}</span>
+                <h1>{course.title}</h1>
+                <p>{course.description}</p>
+                <div className="fd-detail-meta">
+                  <span className="fd-rating">
+                    <Star size={15} fill="currentColor" />
+                    {course.rating} course rating
+                  </span>
+                  <span>With {course.instructor}</span>
+                </div>
+                <div className="fd-detail-facts">
+                  <span>
+                    <Clock3 />
+                    {course.duration}
+                  </span>
+                  <span>
+                    <BookOpen />
+                    {course.lessons.length} modules
+                  </span>
+                  <span>
+                    <GraduationCap />
+                    {course.level}
+                  </span>
+                </div>
+                <h2>What you'll create</h2>
+                <p>
+                  A practical project that brings together{" "}
+                  {course.tools.join(", ")}. Build your skills step by step and
+                  finish with something you can make your own.
+                </p>
+                <h2>Course curriculum</h2>
+                <p className="fd-muted">
+                  {course.lessons.length} modules · Expand a module to see the
+                  focus.
+                </p>
+                <div className="fd-curriculum">
+                  {course.lessons.map((lesson, i) => (
+                    <details key={lesson}>
+                      <summary>
+                        <span>
+                          <small>0{i + 1}</small>
+                          {lesson.replace(/^Module \d+:\s*/, "")}
+                        </span>
+                        <ChevronDown size={18} />
+                      </summary>
+                      <p>
+                        Explore{" "}
+                        {lesson.replace(/^Module \d+:\s*/, "").toLowerCase()}{" "}
+                        through a guided practice brief. Use {course.tools[0]}{" "}
+                        to experiment, then capture your learning in your course
+                        notes.
+                      </p>
+                    </details>
+                  ))}
+                </div>
+                <h2>Meet your instructor</h2>
+                <div className="fd-instructor-profile">
+                  <span className="fd-avatar">
+                    {course.instructor
+                      .split(" ")
+                      .map((s) => s[0])
+                      .slice(0, 2)
+                      .join("")}
+                  </span>
+                  <div>
+                    <h3>{course.instructor}</h3>
+                    <p className="fd-muted">
+                      Your guide to {course.category.toLowerCase()} in the
+                      Create.IT course collection.
+                    </p>
                   </div>
                 </div>
-
-                {/* Body Content */}
-                <div className="detail-body-pane">
-                  
-                  {/* Top Stats Bar */}
-                  <div className="detail-stats-bar">
-                    <div className="stat-pill">
-                      <Clock size={14} color="#38bdf8" />
-                      <span>{selectedCourse.duration}</span>
-                    </div>
-
-                    <div className="stat-pill">
-                      <Star size={14} fill="#fbbf24" stroke="none" />
-                      <span>{selectedCourse.rating} Rating</span>
-                    </div>
-
-                    <div className="stat-pill">
-                      <Users size={14} color="#a78bfa" />
-                      <span>{selectedCourse.students || selectedCourse.studentsCount || '12k'} Enrolled</span>
-                    </div>
-
-                    <div className="detail-price-highlight">
-                      <span className="price-tag-sub">Tuition:</span>
-                      <span className="price-tag-amount">R{selectedCourse.price.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {/* Description Overview */}
-                  <div className="detail-text-block">
-                    <h3>Course Overview & Studio Objectives</h3>
-                    <p>{selectedCourse.description}</p>
-                  </div>
-
-                  {/* Industry Tools Covered */}
-                  {selectedCourse.tools && selectedCourse.tools.length > 0 && (
-                    <div className="detail-text-block">
-                      <h3>Software & Technologies Covered</h3>
-                      <div className="list-tools-cluster" style={{ marginTop: '8px' }}>
-                        {selectedCourse.tools.map((tool, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            className="list-tool-chip interactive-tag"
-                            style={{ fontSize: '12px', padding: '4px 10px' }}
-                            onClick={(e) => handleTagToolClick(tool, e)}
-                            title={`Search for ${tool}`}
-                          >
-                            <Wrench size={11} style={{ display: 'inline', marginRight: '4px' }} />
-                            {tool}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Modules & Curriculum Accordion */}
-                  <div className="detail-modules-block">
-                    <h3>Structured Curriculum & Modules</h3>
-                    <div className="detail-modules-grid">
-                      {selectedCourse.lessons.map((les, idx) => (
-                        <div key={idx} className="module-item-pill">
-                          <CheckCircle2 size={16} color="#34d399" />
-                          <span>{les}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="detail-action-buttons">
-                    {!enrolled.some(item => item.courseId === selectedCourse.id) && <button
-                      type="button" 
-                      className={`btn-vibrant-cart-action ${cart.some(item => item.id === selectedCourse.id) ? 'in-cart' : ''}`}
-                      onClick={(e) => handleToggleCart(selectedCourse, e)}
-                    >
-                      <ShoppingCart size={17} />
-                      <span>{cart.some(item => item.id === selectedCourse.id) ? 'In Your Cart ✓' : 'Add to Cart (R' + selectedCourse.price.toFixed(2) + ')'}</span>
-                    </button>}
-
-                    <button 
-                      type="button" 
-                      className="btn-primary-emerald"
-                      onClick={(e) => handleInstantEnroll(selectedCourse, e)}
-                    >
-                      <Check size={17} />
-                      <span>{enrolled.some(item => item.courseId === selectedCourse.id) ? 'Go to My Learning' : 'Continue to Checkout'}</span>
-                    </button>
-                  </div>
-
-                </div>
-
               </div>
-
-            </div>
-          ) : activeTab === 'catalog' ? (
-            /* 2. Searchable Course List View (NO CELLS - Dedicated Searchable List) */
-            <div className="sleek-catalog-container">
-              
-              {/* Course Catalogue Header Banner */}
-              <div className="sleek-catalog-banner">
-                <div className="banner-content-left">
-                  <h2 className="banner-title">Creative Course Catalogue</h2>
-                  <p className="banner-sub">
-                    Filter and search industry-standard masterclasses in motion design, 3D CGI, UX prototyping, spatial audio, and real-time game art.
+              <aside className="fd-detail-buy">
+                <CourseImage course={course} />
+                <div>
+                  <span className="fd-kicker">
+                    MAKE ROOM FOR YOUR NEXT SKILL
+                  </span>
+                  <strong className="fd-detail-price">
+                    {money(course.price)}
+                  </strong>
+                  <p className="fd-muted">
+                    One-time purchase · Learn at your pace
+                  </p>
+                  <button
+                    className="fd-primary fd-wide"
+                    onClick={() =>
+                      isEnrolled(course.id)
+                        ? setPlayerId(course.id)
+                        : addCart(course)
+                    }
+                  >
+                    {isEnrolled(course.id)
+                      ? "Continue learning"
+                      : inCart(course.id)
+                        ? "View cart"
+                        : "Add to cart"}
+                    <ArrowRight size={16} />
+                  </button>
+                  <button
+                    className="fd-secondary fd-wide"
+                    onClick={() => toggleWishlist(course.id)}
+                  >
+                    <Heart
+                      size={15}
+                      fill={
+                        wishlist.includes(course.id) ? "currentColor" : "none"
+                      }
+                    />
+                    {wishlist.includes(course.id)
+                      ? "Saved to wishlist"
+                      : "Save for later"}
+                  </button>
+                  <ul>
+                    <li>
+                      <Check size={15} /> {course.lessons.length} structured
+                      modules
+                    </li>
+                    <li>
+                      <Check size={15} /> Saved progress & personal notes
+                    </li>
+                    <li>
+                      <Check size={15} /> Certificate of completion
+                    </li>
+                  </ul>
+                  <p className="fd-small fd-muted">
+                    Demo purchase. No payment required.
                   </p>
                 </div>
-                <div className="banner-count-box">
-                  <span className="count-big-num">{filteredCourses.length}</span>
-                  <span className="count-sub-label">Courses</span>
+              </aside>
+            </div>
+          </div>
+        ) : tab === "catalog" ? (
+          <>
+            <div className="fd-breadcrumb">
+              Your creative journey <span>/</span>{" "}
+              <strong>Explore courses</strong>
+            </div>
+            <section className="fd-hero">
+              <div className="fd-hero-copy">
+                <span className="fd-kicker">
+                  <span className="fd-live-dot" /> FOR THE ENDLESSLY CURIOUS
+                </span>
+                <h1>
+                  Big ideas.
+                  <br />
+                  Start <em>here.</em>
+                </h1>
+                <p>
+                  Turn your “what if” into something real.
+                  <br className="fd-desktop-break" /> Practical courses for your
+                  next creative chapter.
+                </p>
+                <button
+                  className="fd-primary"
+                  onClick={() => {
+                    reset();
+                    document.getElementById("course-search").focus();
+                    document
+                      .getElementById("course-collection")
+                      .scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
+                  Find your next course <ArrowDown size={16} />
+                </button>
+                <div className="fd-hero-foot">
+                  <span>
+                    <CheckCircle2 size={14} /> Learn at your own pace
+                  </span>
+                  <span>
+                    <Award size={14} /> Celebrate every milestone
+                  </span>
                 </div>
               </div>
-
-              {/* Category Filter Pills Bar */}
-              <div className="catalog-header-bar">
-                <div className="sleek-category-pills-row">
-                  {categories.map(cat => {
-                    const isSelected = selectedCategory === cat;
-                    return (
-                      <button 
-                        key={cat}
-                        type="button" 
-                        className={`sleek-cat-btn ${isSelected ? 'active' : ''}`}
-                        onClick={() => setSelectedCategory(cat)}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
+              <div className="fd-hero-art" aria-hidden="true">
+                <div className="fd-orbit orbit-one" />
+                <div className="fd-orbit orbit-two" />
+                <div className="fd-orb" />
+                <span className="fd-art-star star-one">✦</span>
+                <span className="fd-art-star star-two">✧</span>
+                <div className="fd-art-label">
+                  <span className="fd-art-swatch" />
+                  <div>
+                    IDEAS INTO REALITY<small>Your creativity, in motion.</small>
+                  </div>
+                  <ArrowRight size={17} />
                 </div>
-
-                {hasActiveFilters && (
-                  <button 
-                    type="button" 
-                    className="btn-reset-filters-mini"
-                    onClick={handleResetFilters}
-                  >
-                    <RotateCcw size={12} /> Reset Filters
-                  </button>
-                )}
+                <span className="fd-art-caption">IMAGINE / MAKE / REPEAT</span>
               </div>
-
-              {/* Status Header: Showing X Results */}
-              <div className="list-search-status-bar">
-                <span className="list-status-text">
-                  Showing <strong>{filteredCourses.length}</strong> {filteredCourses.length === 1 ? 'creative program' : 'creative programs'}
-                  {searchQuery ? ` matching "${searchQuery}"` : ''}
-                  {selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}
+            </section>
+            {nextCourse && (
+              <button
+                className="fd-resume"
+                onClick={() => {
+                  navigate("dashboard");
+                  setPlayerId(nextCourse.id);
+                }}
+              >
+                <span className="fd-resume-icon">
+                  <BookOpen size={18} />
+                </span>
+                <span>
+                  <strong>A little progress goes a long way.</strong>
+                  <small>
+                    Pick up {nextCourse.title} · {next.progress}% complete
+                  </small>
+                </span>
+                <span className="fd-resume-link">
+                  Continue learning <ArrowRight size={16} />
+                </span>
+              </button>
+            )}
+            <section id="course-collection" className="fd-collection">
+              <div className="fd-section-heading">
+                <div>
+                  <span className="fd-kicker">FIND YOUR NEXT SPARK</span>
+                  <h2>
+                    A world of things to create<span>.</span>
+                  </h2>
+                </div>
+                <span className="fd-collection-count">
+                  {courses.length} curated courses
                 </span>
               </div>
-
-              {/* Searchable Vertical List (NO CELLS) */}
-              {filteredCourses.length > 0 ? (
-                <div className="searchable-course-list">
-                  {filteredCourses.map(course => {
-                    const colorDef = CATEGORY_COLORS[course.category] || { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8', border: '#6366f1' };
-                    const isInCart = cart.some(item => item.id === course.id);
-                    const isEnrolled = enrolled.some(e => e.courseId === course.id);
-                    const isCurriculumOpen = !!expandedCurriculums[course.id];
-
-                    return (
-                      <div 
-                        key={course.id} 
-                        className={`searchable-list-row-item ${isInCart ? 'selected-in-cart' : ''}`}
-                        onClick={() => setSelectedCourseId(course.id)}
-                      >
-                        {/* 1. Left Thumbnail Box */}
-                        <div className="list-row-thumb-box">
-                          <img 
-                            src={course.image || defaultHeroImg} 
-                            alt={course.title} 
-                            className="list-row-thumb-img"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = defaultHeroImg;
-                            }}
-                          />
-                          <button
-                            type="button"
-                            className="list-row-cat-tag interactive-tag"
-                            style={{ backgroundColor: colorDef.bg, color: colorDef.text, borderColor: colorDef.border }}
-                            onClick={(e) => handleTagCategoryClick(course.category, e)}
-                            title={`Filter by ${course.category}`}
-                          >
-                            {course.category}
-                          </button>
-                          <span className="list-row-duration-pill">
-                            <Clock size={10} /> {course.duration}
-                          </span>
-                        </div>
-
-                        {/* 2. Middle Content Pane */}
-                        <div className="list-row-content-pane">
-                          
-                          {/* Badges & Level Row */}
-                          <div className="list-row-header-tags">
-                            {course.badge && (
-                              <span className="list-row-badge-pill">
-                                <Sparkles size={10} /> {course.badge}
-                              </span>
-                            )}
-                            <span className="list-row-level-tag">
-                              {course.level || 'All Levels'}
-                            </span>
-                          </div>
-
-                          {/* Title */}
-                          <h3 className="list-row-title">{course.title}</h3>
-
-                          {/* Description Snippet */}
-                          <p className="list-row-desc">{course.description}</p>
-
-                          {/* Software / Tools Badges */}
-                          {course.tools && course.tools.length > 0 && (
-                            <div className="list-tools-cluster">
-                              {course.tools.map((tool, tIdx) => (
-                                <button
-                                  key={tIdx}
-                                  type="button"
-                                  className="list-tool-chip interactive-tag"
-                                  onClick={(e) => handleTagToolClick(tool, e)}
-                                  title={`Search for ${tool}`}
-                                >
-                                  {tool}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Meta Row: Rating, Students, Instructor, Quick Curriculum Toggle */}
-                          <div className="list-meta-strip">
-                            <span className="list-meta-item">
-                              <Star size={12} fill="#fbbf24" stroke="none" /> 
-                              <strong>{course.rating}</strong>
-                            </span>
-                            <span>•</span>
-                            <span className="list-meta-item">
-                              <Users size={12} /> {course.students || course.studentsCount || '10k'} enrolled
-                            </span>
-                            <span>•</span>
-                            <span className="list-meta-item">
-                              Lead Instructor: <strong className="list-instructor-highlight">{course.instructor}</strong>
-                            </span>
-                            <span>•</span>
-                            <button 
-                              type="button" 
-                              className="btn-curriculum-accordion-toggle"
-                              onClick={(e) => toggleCurriculumAccordion(course.id, e)}
-                            >
-                              <span>Curriculum ({course.lessons?.length || 4} modules)</span>
-                              {isCurriculumOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                            </button>
-                          </div>
-
-                          {/* Inline Curriculum Accordion Breakdown */}
-                          {isCurriculumOpen && (
-                            <div className="list-row-curriculum-accordion" onClick={(e) => e.stopPropagation()}>
-                              <div className="list-curriculum-chips-grid">
-                                {course.lessons.map((les, lIdx) => (
-                                  <div key={lIdx} className="list-curriculum-chip">
-                                    <CheckCircle2 size={12} color="#34d399" style={{ display: 'inline', marginRight: '4px' }} />
-                                    {les}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                        </div>
-
-                        {/* 3. Right Actions & Pricing Column */}
-                        <div className="list-row-actions-pane" onClick={(e) => e.stopPropagation()}>
-                          
-                          <div className="list-row-price-display">
-                            <span className="list-row-price-val">R{course.price.toFixed(2)}</span>
-                            <span className="list-row-price-tax">Includes Full Diploma</span>
-                          </div>
-
-                          {isEnrolled ? (
-                            <button 
-                              type="button"
-                              className="list-btn-cart-toggle in-cart"
-                              onClick={() => setActiveTab('dashboard')}
-                            >
-                              <Check size={13} />
-                              <span>Enrolled ✓</span>
-                            </button>
-                          ) : (
-                            <button 
-                              type="button"
-                              className={`list-btn-cart-toggle ${isInCart ? 'in-cart' : ''}`}
-                              onClick={(e) => handleToggleCart(course, e)}
-                              title={isInCart ? "Remove from cart" : "Add to cart"}
-                            >
-                              {isInCart ? <Check size={13} /> : <Plus size={13} />}
-                              <span>{isInCart ? 'In Cart ✓' : 'Add to Cart'}</span>
-                            </button>
-                          )}
-
-                          <button 
-                            type="button"
-                            className="list-btn-view-details"
-                            onClick={() => setSelectedCourseId(course.id)}
-                          >
-                            <span>Syllabus & Info →</span>
-                          </button>
-
-                        </div>
-
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                /* Empty Search / Filter State */
-                <div className="catalog-empty-state-list">
-                  <div className="empty-icon-circle">
-                    <Search size={32} color="#818cf8" />
-                  </div>
-                  <h3>No creative courses matched your search</h3>
-                  <p>Try searching for a different creative discipline (e.g. Cinema 4D, Figma, Blender, Unreal Engine, Audio, VFX) or reset your active filters.</p>
-                  <button 
-                    type="button" 
-                    className="btn-submit-purple"
-                    style={{ width: 'auto', padding: '10px 20px', margin: '14px auto 0' }}
-                    onClick={handleResetFilters}
+              <div className="fd-discovery">
+                <label className="fd-search" htmlFor="course-search">
+                  <Search size={18} />
+                  <input
+                    id="course-search"
+                    type="search"
+                    placeholder="What would you like to create?"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    aria-label="Search courses"
+                  />
+                  {query && (
+                    <button
+                      aria-label="Clear search"
+                      onClick={() => setQuery("")}
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                  <span className="fd-search-hint">
+                    Try “motion” or “Figma”
+                  </span>
+                </label>
+                <button
+                  className={`fd-secondary ${filtersOpen ? "selected" : ""}`}
+                  aria-expanded={filtersOpen}
+                  aria-controls="course-filters"
+                  onClick={() => setFiltersOpen((v) => !v)}
+                >
+                  <SlidersHorizontal size={16} />
+                  Filters
+                  {(level !== "all" || price !== "all") && (
+                    <span className="fd-filter-dot" />
+                  )}
+                </button>
+              </div>
+              <div
+                className="fd-categories"
+                role="group"
+                aria-label="Course category"
+              >
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    aria-pressed={category === cat}
+                    onClick={() => setCategory(cat)}
                   >
-                    Reset All Filters
+                    {cat === "All" && <LayoutGrid size={13} />}
+                    {cat === "All" ? "All courses" : cat}
+                  </button>
+                ))}
+              </div>
+              {filtersOpen && (
+                <div className="fd-filters" id="course-filters">
+                  <label>
+                    Skill level
+                    <select
+                      value={level}
+                      onChange={(e) => setLevel(e.target.value)}
+                    >
+                      <option value="all">All levels</option>
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </label>
+                  <label>
+                    Price range
+                    <select
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    >
+                      <option value="all">All prices</option>
+                      <option value="under600">Under R600</option>
+                      <option value="600-750">R600 - R750</option>
+                      <option value="above750">Above R750</option>
+                    </select>
+                  </label>
+                  <button className="fd-text-button" onClick={reset}>
+                    Reset filters <X size={14} />
                   </button>
                 </div>
               )}
-
+              <div className="fd-results-bar">
+                <p role="status">
+                  {activeFilters
+                    ? `${filtered.length} matching ${filtered.length === 1 ? "course" : "courses"}`
+                    : "A new skill is closer than you think."}
+                  {activeFilters && <button onClick={reset}>Clear all</button>}
+                </p>
+                <label>
+                  Sort by{" "}
+                  <select
+                    aria-label="Sort courses"
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value)}
+                  >
+                    <option value="popular">Most popular</option>
+                    <option value="rating">Highest rated</option>
+                    <option value="price-asc">Price: low to high</option>
+                    <option value="price-desc">Price: high to low</option>
+                    <option value="title">Title: A - Z</option>
+                  </select>
+                </label>
+              </div>
+              {filtered.length ? (
+                <div className="fd-course-grid">{filtered.map(renderCard)}</div>
+              ) : (
+                <EmptyState
+                  icon={Search}
+                  title="No courses found. Yet."
+                  text="Try a different keyword or give your filters a fresh start."
+                  action="Clear search & filters"
+                  onAction={reset}
+                />
+              )}
+            </section>
+          </>
+        ) : tab === "dashboard" ? (
+          <>
+            <div className="fd-page-heading">
+              <span className="fd-kicker">YOUR NEXT CHAPTER</span>
+              <h1>
+                Keep your curiosity going<span>.</span>
+              </h1>
+              <p>Your courses, your pace. Every small step counts.</p>
             </div>
-          ) : activeTab === 'dashboard' ? (
-            /* 3. Student Dashboard View */
-            <div className="sleek-dashboard-container">
-              
-              <div className="dashboard-hero-strip">
-                <div>
-                  <h2 className="catalog-main-title">Student Learning Dashboard</h2>
-                  <p className="catalog-main-sub">Track your enrolled courses, active progression, and graduation milestones.</p>
-                </div>
+            <div className="fd-stats">
+              <div>
+                <BookOpen />
+                <strong>{enrolled.length}</strong>
+                <span>Enrolled courses</span>
               </div>
-
-              {/* 4 Stats Cards */}
-              <div className="dashboard-stats-row">
-                <div className="stat-card-glass stat-card-purple">
-                  <div className="stat-icon-circle purple">
-                    <BookOpen size={20} />
-                  </div>
-                  <div className="stat-text-box">
-                    <h3>{enrolled.length}</h3>
-                    <p>Enrolled Courses</p>
-                  </div>
-                </div>
-
-                <div className="stat-card-glass stat-card-cyan">
-                  <div className="stat-icon-circle cyan">
-                    <Clock size={20} />
-                  </div>
-                  <div className="stat-text-box">
-                    <h3>{inProgressCount}</h3>
-                    <p>In Progress</p>
-                  </div>
-                </div>
-
-                <div className="stat-card-glass stat-card-emerald">
-                  <div className="stat-icon-circle emerald">
-                    <Award size={20} />
-                  </div>
-                  <div className="stat-text-box">
-                    <h3>{completedCount}</h3>
-                    <p>Completed</p>
-                  </div>
-                </div>
-
-                <div className="stat-card-glass stat-card-amber">
-                  <div className="stat-icon-circle amber">
-                    <Layers size={20} />
-                  </div>
-                  <div className="stat-text-box">
-                    <h3>{totalModules}</h3>
-                    <p>Course Modules</p>
-                  </div>
-                </div>
+              <div>
+                <Clock3 />
+                <strong>{enrolled.length - completed.length}</strong>
+                <span>In progress</span>
               </div>
-
-              {/* Enrolled Courses Progression List */}
-              <div className="dashboard-enrolled-section">
-                <h3 className="section-subtitle">Active Course Progression</h3>
-
-                <div className="dashboard-enrolled-list">
-                  {enrolled.map(item => {
-                    const course = courses.find(c => c.id === item.courseId);
-                    if (!course) return null;
-                    const colorDef = CATEGORY_COLORS[course.category] || { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' };
-
-                    const burst = progressBursts[item.courseId];
-
-                    return (
-                      <div
-                        key={item.courseId}
-                        className={`enrolled-item-card ${burst ? 'just-updated' : ''}`}
-                      >
-                        <img src={course.image || defaultHeroImg} alt={course.title} className="enrolled-thumb-rounded" />
-                        
-                        <div className="enrolled-details-pane">
-                          <div className="enrolled-title-row">
-                            <div>
-                              <span className="enrolled-cat-badge" style={{ color: colorDef.text }}>
-                                {course.category}
-                              </span>
-                              <h4 className="enrolled-course-name">{course.title}</h4>
-                              <span className="enrolled-instructor-name">Instructor: {course.instructor}</span>
-                            </div>
-
-                            <div className="enrolled-progress-pct-box">
-                              <span className="pct-num">{item.progress}%</span>
-                              <span className="pct-label">{item.progress >= 100 ? 'Completed' : 'Progress'}</span>
-                            </div>
-                          </div>
-
-                          {/* Progress Bar with Gradient, milestone markers, and update burst */}
-                          <div className="enrolled-progressbar-track">
-                            <div 
-                              className={`enrolled-progressbar-fill ${burst ? 'is-updating' : ''}`}
-                              style={{ 
-                                width: `${item.progress}%`,
-                                background: item.progress >= 100 
-                                  ? 'linear-gradient(90deg, #10b981, #34d399)' 
-                                  : 'linear-gradient(90deg, #6366f1, #38bdf8)'
-                              }} 
-                            />
-
-                            {/* Milestone markers at 25, 50, 75 */}
-                            {[25, 50, 75].map(milestone => (
-                              <span
-                                key={milestone}
-                                className={`progress-milestone-badge ${item.progress >= milestone ? 'is-reached' : ''}`}
-                                style={{ left: `${milestone}%` }}
-                                aria-hidden="true"
-                              >
-                                {item.progress >= milestone ? '✓' : ''}
-                              </span>
-                            ))}
-
-                            {/* Floating +25% badge */}
-                            {burst && (
-                              <span key={burst.key} className="progress-burst">
-                                +{burst.amount}%
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Actions */}
-                          <div className="enrolled-action-buttons">
-                            <button 
-                              type="button" 
-                              className="btn-progress-step"
-                              onClick={() => handleIncreaseProgress(item.courseId)}
+              <div>
+                <Award />
+                <strong>{completed.length}</strong>
+                <span>Completed courses</span>
+              </div>
+            </div>
+            <div className="fd-section-heading">
+              <h2>My Learning</h2>
+              <button
+                className="fd-text-button"
+                onClick={() => navigate("catalog")}
+              >
+                Explore courses <ArrowRight size={16} />
+              </button>
+            </div>
+            {!enrolled.length ? (
+              <EmptyState
+                title="Your first chapter is waiting."
+                text="Choose a course and start making something you love."
+                action="Find a course"
+                onAction={() => navigate("catalog")}
+              />
+            ) : (
+              <div className="fd-learning-list">
+                {enrolled.map((entry) => {
+                  const c = courses.find((item) => item.id === entry.courseId);
+                  if (!c) return null;
+                  const done = completedModules(entry, c.lessons.length);
+                  const index =
+                    entry.currentModule ??
+                    c.lessons.findIndex((_, i) => !done.includes(i));
+                  return (
+                    <article
+                      key={c.id}
+                      className={`fd-learning-card ${entry.progress === 100 ? "complete" : ""}`}
+                    >
+                      <CourseImage course={c} />
+                      <div>
+                        <span className="fd-kicker">{c.category}</span>
+                        <h3>{c.title}</h3>
+                        <p className="fd-muted">
+                          {entry.progress >= 100
+                            ? "All modules complete. You made it!"
+                            : `Up next: ${c.lessons[Math.max(0, index)].replace(/^Module \d+:\s*/, "")}`}
+                        </p>
+                        <div className="fd-progress-label">
+                          <span>
+                            {done.length} of {c.lessons.length} modules
+                          </span>
+                          <strong>{entry.progress}%</strong>
+                        </div>
+                        <progress
+                          max="100"
+                          value={entry.progress}
+                          aria-label={`${c.title} progress`}
+                        />
+                        <div className="fd-learning-actions">
+                          <button
+                            className={
+                              entry.progress >= 100
+                                ? "fd-secondary"
+                                : "fd-primary"
+                            }
+                            onClick={() => setPlayerId(c.id)}
+                          >
+                            {entry.progress >= 100
+                              ? "Review course"
+                              : entry.progress > 0
+                                ? "Continue learning"
+                                : "Start learning"}{" "}
+                            <ArrowRight size={15} />
+                          </button>
+                          {entry.progress >= 100 && (
+                            <button
+                              className="fd-primary fd-cert-ready"
+                              onClick={() => setCertificateId(c.id)}
                             >
-                              {item.progress >= 100 ? 'Review Course Material ✓' : 'Complete Next Lesson (+25%)'}
+                              <Award size={16} /> Your certificate is ready
                             </button>
-
-                            {item.progress >= 100 && (
-                              <button 
-                                type="button" 
-                                className="btn-view-certificate"
-                                onClick={() => handleOpenCertificate(item.courseId)}
-                              >
-                                <Award size={14} />
-                                View Certificate
-                              </button>
-                            )}
-
-                            <button 
-                              type="button" 
-                              className="btn-progress-view-info"
-                              onClick={() => setSelectedCourseId(course.id)}
-                            >
-                              Course Details
-                            </button>
-                          </div>
-
+                          )}
+                          <button
+                            className="fd-text-button"
+                            onClick={() => openCourse(c.id)}
+                          >
+                            Course details
+                          </button>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </article>
+                  );
+                })}
               </div>
-
+            )}
+          </>
+        ) : tab === "wishlist" ? (
+          <>
+            <div className="fd-page-heading">
+              <span className="fd-kicker">SAVE A LITTLE INSPIRATION</span>
+              <h1>
+                Your someday starts here<span>.</span>
+              </h1>
+              <p>All the courses you want to come back to.</p>
             </div>
-          ) : activeTab === 'customer' ? (
-            <CustomerExperience
-              user={user}
-              onUpdateUser={onUpdateUser}
-              orders={orders}
-              tickets={tickets}
-              onAddTicket={(ticket) => setTickets(prev => [ticket, ...prev])}
-              reviews={reviews}
-              onAddReview={(review) => setReviews(prev => [review, ...prev.filter(item => item.courseId !== review.courseId)])}
-              enrolled={enrolled}
-              courses={courses}
-              onOpenCourse={(id) => { setActiveTab('catalog'); setSelectedCourseId(id); }}
-              onOpenLearning={() => setActiveTab('dashboard')}
-              onExploreCatalog={() => { setSelectedCourseId(null); setActiveTab('catalog'); }}
-              onLoadDemoData={() => { setOrders(sampleOrders); setTickets(sampleTickets); setReviews(sampleReviews); onShowToast?.('Sample experience loaded.', 'success'); }}
-              onShowToast={onShowToast}
-              newOrderId={newOrderId}
-              onDismissOrder={() => setNewOrderId(null)}
-              initialSection={customerSection}
-            />
-          ) : activeTab === 'cart' ? (
-            /* 4. Cart View */
-            <div className="sleek-cart-container">
-              
-              <div className="catalog-header-bar">
-                <div>
-                  <h2 className="catalog-main-title">Shopping Cart</h2>
-                  <p className="catalog-main-sub">Review your selected creative courses and proceed to checkout.</p>
-                </div>
+            {wishlist.length ? (
+              <div className="fd-course-grid">
+                {courses.filter((c) => wishlist.includes(c.id)).map(renderCard)}
               </div>
-
-              {cart.length > 0 ? (
-                <div className="cart-glass-panel">
-                  
-                  <div className="cart-items-stack">
-                    {cart.map(item => (
-                      <div key={item.id} className="cart-item-row">
-                        <img src={item.image || defaultHeroImg} alt={item.title} className="cart-item-thumb" />
-                        
-                        <div className="cart-item-info">
-                          <h4>{item.title}</h4>
-                          <span className="cart-item-meta">{item.category} • {item.instructor}</span>
-                        </div>
-
-                        <div className="cart-item-price-tag">
-                          R{item.price.toFixed(2)}
-                        </div>
-
-                        <button 
-                          type="button" 
-                          className="cart-btn-remove"
-                          onClick={() => handleRemoveFromCart(item.id)}
-                          title="Remove item"
+            ) : (
+              <EmptyState
+                icon={Heart}
+                title="Room for your next big idea."
+                text="Tap the heart on a course to save it for later."
+                action="Explore courses"
+                onAction={() => navigate("catalog")}
+              />
+            )}
+          </>
+        ) : tab === "certificates" ? (
+          <>
+            <div className="fd-page-heading">
+              <span className="fd-kicker">LOOK WHAT YOU MADE POSSIBLE</span>
+              <h1>
+                Proof of your progress<span>.</span>
+              </h1>
+              <p>A little reminder of the work you put in.</p>
+            </div>
+            {completed.length ? (
+              <div className="fd-achievement-grid">
+                {completed.map((entry) => {
+                  const c = courses.find((item) => item.id === entry.courseId);
+                  return (
+                    c && (
+                      <article className="fd-achievement" key={c.id}>
+                        <Award size={40} />
+                        <span className="fd-kicker">COURSE COMPLETE</span>
+                        <h2>{c.title}</h2>
+                        <p>{user.name}</p>
+                        <button
+                          className="fd-primary"
+                          onClick={() => setCertificateId(c.id)}
                         >
-                          <Trash2 size={16} />
+                          View certificate <ArrowRight size={15} />
+                        </button>
+                      </article>
+                    )
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Award}
+                title="Your achievements will live here."
+                text="Complete all modules in a course to celebrate and download your certificate."
+                action="Go to My Learning"
+                onAction={() => navigate("dashboard")}
+              />
+            )}
+          </>
+        ) : tab === "cart" ? (
+          <>
+            <div className="fd-page-heading">
+              <span className="fd-kicker">INVEST IN YOUR CURIOSITY</span>
+              <h1>
+                Good things in the bag<span>.</span>
+              </h1>
+              <p>
+                {cart.length
+                  ? `${cart.length} ${cart.length === 1 ? "course" : "courses"} for your next creative chapter.`
+                  : "A new skill is just a course away."}
+              </p>
+            </div>
+            {cart.length ? (
+              <div className="fd-cart-grid">
+                <div className="fd-cart-items">
+                  {cart.map((c) => (
+                    <article className="fd-cart-item" key={c.id}>
+                      <CourseImage course={c} />
+                      <div>
+                        <span className="fd-kicker">{c.category}</span>
+                        <h3>
+                          <button onClick={() => openCourse(c.id)}>
+                            {c.title}
+                          </button>
+                        </h3>
+                        <p className="fd-muted">
+                          {c.duration} · {c.lessons.length} modules
+                        </p>
+                        <button
+                          className="fd-text-button"
+                          onClick={() => {
+                            setCart((prev) =>
+                              prev.filter((item) => item.id !== c.id),
+                            );
+                            onShowToast("Course removed from cart.");
+                          }}
+                        >
+                          <Trash2 size={13} /> Remove
                         </button>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="cart-checkout-bar">
-                    <div className="cart-subtotal-box">
-                      <span className="cart-subtotal-label">Total Tuition:</span>
-                      <strong className="cart-subtotal-val">R{cartTotal.toFixed(2)}</strong>
-                    </div>
-
-                    <button 
-                      type="button" 
-                      className="btn-primary-emerald"
-                      onClick={() => setCheckoutOpen(true)}
-                    >
-                      <CreditCard size={18} />
-                      <span>Review Checkout</span>
-                    </button>
-                  </div>
-
-                </div>
-              ) : (
-                <div className="cart-empty-box">
-                  <div className="cart-empty-icon-circle">
-                    <ShoppingCart size={32} color="#6366f1" />
-                  </div>
-                  <h3>Your shopping cart is empty</h3>
-                  <p>Explore the course catalog to add creative programs to your cart.</p>
-                  <button 
-                    type="button" 
-                    className="btn-vibrant-cart-action"
-                    onClick={() => setActiveTab('catalog')}
-                    style={{ marginTop: '16px' }}
+                      <strong>{money(c.price)}</strong>
+                    </article>
+                  ))}
+                  <button
+                    className="fd-text-button"
+                    onClick={() => navigate("catalog")}
                   >
-                    Browse Course Catalog
+                    <ArrowLeft size={15} /> Keep exploring
                   </button>
                 </div>
-              )}
-
-            </div>
-          ) : null}
-
-        <Footer
-          onNavigate={(target) => {
-            if (target === 'login' || target === 'landing' || target === 'register') {
-              onNavigateView?.(target);
-            } else {
-              setSelectedCourseId(null);
-              setActiveTab('catalog');
+                <aside className="fd-cart-summary">
+                  <span className="fd-kicker">YOUR NEXT CHAPTER</span>
+                  <h2>Order summary</h2>
+                  <div className="fd-total">
+                    <span>
+                      {cart.length} {cart.length === 1 ? "course" : "courses"}
+                    </span>
+                    <strong>{money(total)}</strong>
+                  </div>
+                  <p className="fd-muted">
+                    One-time purchase. Your courses stay in your learning space.
+                  </p>
+                  <button
+                    className="fd-primary fd-wide"
+                    onClick={() => setCheckoutOpen(true)}
+                  >
+                    Review demo checkout <ArrowRight size={16} />
+                  </button>
+                  <div className="fd-cart-note">
+                    <ShieldCheck size={17} />
+                    <span>Demo checkout. No payment required.</span>
+                  </div>
+                </aside>
+              </div>
+            ) : (
+              <EmptyState
+                icon={ShoppingBag}
+                title="Your bag is full of possibility."
+                text="Find a course that sparks your curiosity and add it to your cart."
+                action="Explore courses"
+                onAction={() => navigate("catalog")}
+              />
+            )}
+          </>
+        ) : (
+          <CustomerExperience
+            key={section}
+            user={user}
+            onUpdateUser={onUpdateUser}
+            orders={orders}
+            tickets={tickets}
+            reviews={reviews}
+            courses={courses}
+            enrolled={enrolled}
+            initialSection={section}
+            onAddTicket={(t) => setTickets((prev) => [t, ...prev])}
+            onAddReview={(r) =>
+              setReviews((prev) => [
+                r,
+                ...prev.filter((item) => item.courseId !== r.courseId),
+              ])
             }
-          }}
-          onNavigateToTab={(tab, section) => {
-            setSelectedCourseId(null);
-            setActiveTab(tab);
-            if (section) setCustomerSection(section);
-          }}
+            onOpenCourse={openCourse}
+            onOpenLearning={() => navigate("dashboard")}
+            onExploreCatalog={() => navigate("catalog")}
+            onLoadDemoData={() => {
+              setOrders((prev) => [
+                ...prev,
+                ...sampleOrders.filter((o) => !prev.some((p) => p.id === o.id)),
+              ]);
+              setTickets((prev) => [
+                ...prev,
+                ...sampleTickets.filter(
+                  (t) => !prev.some((p) => p.id === t.id),
+                ),
+              ]);
+              setReviews((prev) => [
+                ...prev,
+                ...sampleReviews.filter(
+                  (r) => !prev.some((p) => p.courseId === r.courseId),
+                ),
+              ]);
+              onShowToast("Clearly labelled sample activity added.", "success");
+            }}
+            onShowToast={onShowToast}
+            newOrderId={newOrderId}
+            onDismissOrder={() => setNewOrderId(null)}
+          />
+        )}
+        <footer className="fd-footer">
+          <div>
+            <button className="fd-brand" onClick={() => navigate("catalog")}>
+              Create<span className="fd-brand-dot">.IT</span>
+            </button>
+            <span>Stay curious. Keep creating.</span>
+          </div>
+          <p>
+            © 2026 Create.IT · IMY 320 final design · University of Pretoria
+            student project.
+          </p>
+          <div>
+            <button onClick={() => navigate("customer", "support")}>
+              Help & support
+            </button>
+            <button onClick={() => navigate("customer", "profile")}>
+              Your data
+            </button>
+            <button onClick={() => onNavigateView("landing")}>
+              About Create.IT
+            </button>
+          </div>
+          <small>
+            Built with React · Vite · Lucide · html2canvas · Google Fonts. Local
+            browser prototype; no real payments or emails.
+          </small>
+        </footer>
+      </main>
+      {checkoutOpen && (
+        <Checkout
+          cart={cart}
+          total={total}
+          onClose={closeCheckout}
+          onConfirm={confirmOrder}
         />
-
-        </main>
-
-      </div>
-
-      {checkoutOpen && <div className="cx-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setCheckoutOpen(false); }}>
-        <div className="cx-checkout-modal" role="dialog" aria-modal="true" aria-labelledby="cx-checkout-title">
-          <span className="cx-section-kicker">FINAL STEP</span>
-          <h2 id="cx-checkout-title">Review your order</h2>
-          <p>Confirm this prototype checkout to add the courses to My Learning and create a receipt.</p>
-          <div className="cx-checkout-items">{cart.map(item => <div key={item.id}><span>{item.title}</span><strong>R{item.price.toFixed(2)}</strong></div>)}</div>
-          <div className="cx-checkout-total"><span>Total</span><strong>R{cartTotal.toFixed(2)}</strong></div>
-          <p className="cx-checkout-note"><ShieldCheck size={16} /> Demo only. No payment details or money are collected.</p>
-          <div className="cx-modal-actions"><button type="button" className="cx-secondary" onClick={() => setCheckoutOpen(false)}>Back to cart</button><button type="button" className="cx-primary" onClick={handleCheckout}>Confirm demo order <Check size={16} /></button></div>
-        </div>
-      </div>}
-
+      )}
+      {player && (
+        <CoursePlayerModal
+          key={player.id}
+          course={player}
+          enrolledInfo={enrolled.find((e) => e.courseId === player.id)}
+          onClose={closePlayer}
+          onCompleteModule={finishModule}
+          onSaveModule={(id, i) =>
+            setEnrolled((prev) =>
+              prev.map((e) =>
+                e.courseId === id ? { ...e, currentModule: i } : e,
+              ),
+            )
+          }
+          notes={notes[player.id]}
+          onSaveNotes={(id, value) =>
+            setNotes((prev) => ({ ...prev, [id]: value }))
+          }
+        />
+      )}
       <EnrollmentCelebration
-        isOpen={celebrationOpen}
-        enrolledCourses={celebrationCourses}
-        orderId={newOrderId}
-        onStartLearning={handleCelebrationStartLearning}
-        onClose={handleCelebrationClose}
+        isOpen={!!celebration}
+        enrolledCourses={celebration?.courses}
+        orderId={celebration?.orderId}
+        onStartLearning={startLearning}
+        onClose={closeCelebration}
       />
-
-      <CompletionModal
-        isOpen={!!completionCourseId}
-        course={courses.find(c => c.id === completionCourseId)}
-        onClaimCertificate={handleClaimCertificate}
-        onClose={handleCloseCompletion}
-      />
-
       <CertificateModal
-        isOpen={!!certificateCourseId}
-        course={courses.find(c => c.id === certificateCourseId)}
+        isOpen={!!certificateId}
+        course={courses.find((c) => c.id === certificateId)}
+        completedAt={
+          enrolled.find((e) => e.courseId === certificateId)?.completedAt
+        }
         user={user}
-        onClose={handleCloseCertificate}
+        onClose={closeCertificate}
         onShowToast={onShowToast}
       />
-
     </div>
   );
 }

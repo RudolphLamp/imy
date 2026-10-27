@@ -1,8 +1,54 @@
-# Create.IT - IMY 320 website prototype
+# Create.IT - IMY 320 final website
 
-A standalone, front-end prototype for a multimedia course platform, built for IMY 320: Multimedia Trends at the University of Pretoria.
+**Group Design E (2026)** - a complete, interactive front-end prototype for a multimedia course platform at the University of Pretoria. The final design incorporates the Group Design D usability findings and brings login, course discovery, checkout, learning progress, and customer support into one responsive workspace.
 
-This repository represents the final Group Design C submission (Customer Experience) and includes the earlier Group Design A (login) and Group Design B (products) work.
+## Run the project
+
+Use **Node.js 22.12+** (Node 20.19+ is also supported).
+
+```sh
+npm ci
+npm run dev
+```
+
+Open the local URL printed by Vite, usually **http://localhost:5173**. A fresh browser opens the Jane Smith demo workspace, with two in-progress courses and clearly labelled sample account activity. No credentials are needed to review the prototype. To test a new account, sign out, choose **Create an account**, or use **Explore with demo access** to return to Jane's workspace.
+
+```sh
+npm run lint       # Static checks
+npm test           # Progress and completion regression tests
+npm run build      # Production output in dist/
+npm run preview    # Serve that build locally
+```
+
+The build uses relative asset paths so it can also be served from a repository subdirectory such as `/imy/`. Serve `dist/` with an HTTP static server; opening `index.html` directly as a file is not supported.
+
+## Review the final experience
+
+1. **Find a course:** choose **Find your next course**, search for `motion`, and open **Kinetic Typography & Brand Identity**. Expand the clearly marked curriculum rows. Search also matches tools, categories, descriptions, and instructors. Advanced level/price filters sit behind **Filters**.
+2. **Save or purchase:** use the heart to save the course to **Wishlist**, or **Add to cart**. Open the header cart, choose **Review demo checkout**, read the no-payment explanation, and **Confirm demo order**. The enrolment celebration leads to **My Learning** or the order receipt.
+3. **Continue learning:** open a course in **My Learning**. The lesson workspace contains a practice brief, module navigation, saved personal notes, and an actual downloadable text guide. It is an intentionally labelled teaching-system shell, as allowed by the assignment.
+4. **Finish a course:** choose **Mark complete & continue** for each of the four modules. Progress reaches 25%, 50%, 75%, then 100%, with milestone feedback. The certificate ceremony opens **immediately on the final module**. Download the PNG or reopen it later from **Certificates**. Reviewing completed material never resets progress.
+5. **Manage the experience:** use **Purchase history**, **Help & support**, or **My account** for receipts, searchable FAQs, locally saved support questions, editable reviews, and profile details. Sample records are labelled.
+6. **Check navigation:** scroll the catalogue; the header and side navigation remain fixed. At phone/tablet widths the sidebar becomes a menu drawer with a backdrop and closes after navigation.
+
+See [the final design rationale and feedback response](docs/FINAL-DESIGN.md) for the decisions behind this iteration.
+
+## What changed after usability testing
+
+- Corrected completion feedback by calculating the next progress record before updating React state, removing the stale-state source of the reported `0%` message.
+- Triggered the full certificate/confetti ceremony at 100%, with a persistent certificate link in My Learning and a dedicated Certificates section.
+- Established one obvious catalogue entry point with a clear primary action, prominent search, course cards, and optional advanced filters.
+- Explained demo checkout before confirmation, including that no payment details or money are collected.
+- Used native, keyboard-accessible curriculum disclosures with chevrons.
+- Added a lesson continuation shell, saved notes, and downloadable module guides.
+- Unified the visual design, added wishlist functionality, fixed anchored navigation, and supplied focus handling, modal keyboard controls, reduced-motion support, and mobile layouts.
+- Bundled course images locally and fixed relative asset paths for static hosting.
+
+## Scope and storage
+
+This is a **standalone student front-end prototype**, not an official University of Pretoria service. There is no backend, email delivery, payment processing, or accredited qualification. Course/instructor data and ratings are illustrative.
+
+Accounts and per-account activity live in this browser's `localStorage`. Demo registration/sign-in checks a locally stored salted password digest; use a sample password. This is not production authentication. Clearing browser data removes local accounts and activity. Another device does not share this data. Updating the profile's contact email does not change the original sign-in email. Existing percentage-only progress records remain readable.
 
 ## Group members
 
@@ -11,127 +57,10 @@ This repository represents the final Group Design C submission (Customer Experie
 - Rudolph Lamprecht (u20598425)
 - Zaynab Samir (u22506099)
 
----
+## Research and attribution
 
-## How to run this project
+The `docs/` directory includes the project overview, Group Design D usability testing document, earlier Group Design C supporting document, and the ClickUp, Coursera, and Udemy research reports.
 
-You need Node.js 18 or newer installed.
+The application uses **React 19**, **Vite**, **Lucide React**, **html2canvas**, and **Google Fonts** (Plus Jakarta Sans and Outfit). Earlier prototype components retain Framer Motion. The confetti canvas and final orbital hero illustration are project code. Third-party libraries are also credited in the interface footer.
 
-### 1. Open a terminal in the project folder
-
-If you extracted the zip, open the extracted folder in a terminal (right-click, then "Open in Terminal" on Windows; or use `cd path/to/folder` in any shell).
-
-### 2. Install dependencies
-
-    npm install
-
-This only needs to be done once. It downloads React, Vite, and the small number of libraries the project uses (Lucide Icons, Framer Motion, html2canvas).
-
-### 3. Start the development server
-
-    npm run dev
-
-Vite will print a local URL, usually:
-
-    http://localhost:5173/
-
-### 4. Open that URL in your browser
-
-The site loads immediately. You will land on the Products page.
-
-### 5. (Optional) Build for production
-
-    npm run build
-
-This produces a `dist/` folder with the production build. Not required to review the prototype.
-
----
-
-## What to look for (Group Design C: Peak-End Rule)
-
-The assignment's topic is the Peak-End Rule. The client brief was:
-
-> "I see there are a lot of website out there that does the same thing as ours, but theirs are just so... bland. I need ours to pop! Whether it's them checking out a course, pushing a button, or finishing a course, something needs to stand out!"
-
-Three designed peaks satisfy this brief.
-
-### Peak 1: Enrolment celebration
-
-**What to do:**
-
-1. From the Catalog, click "Add to Cart" on any course.
-2. Click the green Cart button in the top-right.
-3. In the Cart view, click "Review Checkout".
-4. In the modal, click "Confirm demo order".
-
-**What happens:** A full-screen celebration overlay appears with a canvas confetti burst, an animated SVG checkmark, and the enrolled courses staggering in one by one. Two buttons let you continue to the dashboard or view your receipt.
-
-### Peak 2: Lesson completion with milestones
-
-**What to do:**
-
-1. From the left sidebar, click "My Learning".
-2. On any enrolled course card, click "Complete Next Lesson (+25%)".
-
-**What happens:** A floating +25% badge rises from the progress bar, the card flashes green, milestone markers at 25%, 50%, and 75% fill in with checkmarks, and a milestone-specific toast appears ("First milestone! 25% complete", "Halfway there! 50% complete", "Almost there! 75% complete").
-
-### End: Certificate ceremony
-
-**What to do:**
-
-1. On a course in My Learning, click "Complete Next Lesson" until progress reaches 100%.
-2. A "You finished it" modal appears. Click "Claim Certificate".
-3. Alternatively, the enrolled card now shows a "View Certificate" button. Click that.
-
-**What happens:** The certificate opens with a confetti burst, a congratulations header with the user's name in gold, a shimmer sweep across the certificate frame, and a Download button that saves the certificate as a PNG image (2x resolution, via html2canvas).
-
----
-
-## Other features
-
-- **Catalog:** browse courses, filter by category, level, and price; search across titles, tools, and instructors.
-- **Course detail page:** full syllabus, "What You'll Learn", instructor bio, verified reviews.
-- **Cart and Checkout:** slide-over cart, promo code support, order confirmation.
-- **My Learning dashboard:** enrolled courses with progress tracking, milestone markers, next-lesson indicator.
-- **Customer Experience hub:** purchase history with printable receipts, searchable FAQs, support requests, course reviews, editable profile, and a clear explanation of local browser storage.
-- **Collapsible sidebar:** toggle from the top navigation to widen the workspace.
-
----
-
-## Research
-
-Three UX evaluations were conducted on existing online learning platforms using a shortened UEQ questionnaire with four participants each:
-
-1. Clickup UX Report
-2. Coursera UX Report
-3. Udemy UX Report
-
-These three reports and the Design Support Document are included in the submission package on ClickUP. The design guidelines derived from the reports are documented in the supporting document.
-The 4 above mentioned documents can also be found in docs/.
-
----
-
-## Technology and attribution
-
-Built with:
-
-- React 19 (UI)
-- Vite (build tooling)
-- Lucide React (icons)
-- Framer Motion (animations)
-- html2canvas (certificate PNG download)
-- Plus Jakarta Sans and Outfit (Google Fonts)
-
-Confetti is a hand-rolled canvas animation written for this project (`src/utils/confetti.js`). No external confetti library is used.
-
-All libraries are credited in the site footer.
-
-Course data comes from `public/courses.csv` with images from the Unsplash CDN and a local fallback image if any fail to load.
-
----
-
-## Data storage
-
-All user data (cart, enrolled courses, orders, support requests, reviews, profile) is stored in the browser's `localStorage` under a per-account key prefix. Activity persists across refreshes on the same device but does not sync across devices. Clearing browser storage removes all activity.
-
-There is no database or backend. This is a university course prototype, not an official University of Pretoria learning or payment service. No real payments are processed and no emails are sent.
+Course photographs are bundled from the Unsplash CDN; [image source credits](docs/IMAGE-CREDITS.md) list the original URLs. Remote fonts have local system-font fallbacks. No external service is required for the prototype's core interactions once dependencies are installed.

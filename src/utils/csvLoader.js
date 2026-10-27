@@ -1,22 +1,22 @@
-import defaultHeroImg from '../assets/hero.png';
+import defaultHeroImg from "../assets/hero.png";
 /**
- * Curated Unsplash images per course ID.
+ * Local copies of the course photography; source URLs are in docs/IMAGE-CREDITS.md.
  * Each course gets a distinct, topical photo instead of the shared hero image.
  * Falls back to defaultHeroImg if a course ID isn't mapped.
  */
 const COURSE_IMAGES = {
-  '1': 'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=800&q=80',
-  '2': 'https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?auto=format&fit=crop&w=800&q=80',
-  '3': 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=800&q=80',
-  '4': 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=800&q=80',
-  '5': 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80',
-  '6': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-  '7': 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80',
-  '8': 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=800&q=80',
-  '9': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
-  '10': 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80',
-  '11': 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80',
-  '12': 'https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&w=800&q=80'
+  1: `${import.meta.env.BASE_URL}images/courses/1.jpg`,
+  2: `${import.meta.env.BASE_URL}images/courses/2.jpg`,
+  3: `${import.meta.env.BASE_URL}images/courses/3.jpg`,
+  4: `${import.meta.env.BASE_URL}images/courses/4.jpg`,
+  5: `${import.meta.env.BASE_URL}images/courses/5.jpg`,
+  6: `${import.meta.env.BASE_URL}images/courses/6.jpg`,
+  7: `${import.meta.env.BASE_URL}images/courses/7.jpg`,
+  8: `${import.meta.env.BASE_URL}images/courses/8.jpg`,
+  9: `${import.meta.env.BASE_URL}images/courses/9.jpg`,
+  10: `${import.meta.env.BASE_URL}images/courses/10.jpg`,
+  11: `${import.meta.env.BASE_URL}images/courses/11.jpg`,
+  12: `${import.meta.env.BASE_URL}images/courses/12.jpg`,
 };
 
 export const FALLBACK_CSV = `id,title,category,price,duration,instructor,rating,description,lessons,tools,level,students,image,badge
@@ -38,7 +38,7 @@ export const FALLBACK_CSV = `id,title,category,price,duration,instructor,rating,
  */
 export function parseCSVLine(line) {
   const result = [];
-  let current = '';
+  let current = "";
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
@@ -50,9 +50,9 @@ export function parseCSVLine(line) {
       } else {
         inQuotes = !inQuotes;
       }
-    } else if (char === ',' && !inQuotes) {
+    } else if (char === "," && !inQuotes) {
       result.push(current.trim());
-      current = '';
+      current = "";
     } else {
       current += char;
     }
@@ -66,8 +66,12 @@ export function parseCSVLine(line) {
  */
 export function parseCoursesCSV(csvText) {
   if (!csvText || !csvText.trim()) return [];
-  
-  const rawLines = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
+
+  const rawLines = csvText
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim()
+    .split("\n");
   if (rawLines.length <= 1) return [];
 
   const courses = [];
@@ -80,30 +84,41 @@ export function parseCoursesCSV(csvText) {
     if (parts.length < 8) continue;
 
     const id = parts[0]?.trim() || String(i);
-    const title = parts[1]?.trim() || 'Untitled Course';
-    const category = parts[2]?.trim() || 'Multimedia';
-    const price = parseFloat(parts[3]?.trim()) || 500.00;
-    const duration = parts[4]?.trim() || '6 Weeks';
-    const instructor = parts[5]?.trim() || 'Instructor';
+    const title = parts[1]?.trim() || "Untitled Course";
+    const category = parts[2]?.trim() || "Multimedia";
+    const price = parseFloat(parts[3]?.trim()) || 500.0;
+    const duration = parts[4]?.trim() || "6 Weeks";
+    const instructor = parts[5]?.trim() || "Instructor";
     const rating = parseFloat(parts[6]?.trim()) || 4.8;
-    const description = parts[7]?.trim() || 'Course overview and practical exercises.';
-    
+    const description =
+      parts[7]?.trim() || "Course overview and practical exercises.";
+
     // Lessons split by semicolon
-    const lessonsRaw = parts[8] ? parts[8].trim() : '';
-    const lessons = lessonsRaw ? lessonsRaw.split(';').map(l => l.trim()).filter(Boolean) : [
-      'Module 1: Introduction & Fundamentals',
-      'Module 2: Project Workflows',
-      'Module 3: Advanced Topics',
-      'Module 4: Final Practical Submission'
-    ];
+    const lessonsRaw = parts[8] ? parts[8].trim() : "";
+    const lessons = lessonsRaw
+      ? lessonsRaw
+          .split(";")
+          .map((l) => l.trim())
+          .filter(Boolean)
+      : [
+          "Module 1: Introduction & Fundamentals",
+          "Module 2: Project Workflows",
+          "Module 3: Advanced Topics",
+          "Module 4: Final Practical Submission",
+        ];
 
     // Tools split by semicolon
-    const toolsRaw = parts[9] ? parts[9].trim() : '';
-    const tools = toolsRaw ? toolsRaw.split(';').map(t => t.trim()).filter(Boolean) : ['Creative Tools'];
+    const toolsRaw = parts[9] ? parts[9].trim() : "";
+    const tools = toolsRaw
+      ? toolsRaw
+          .split(";")
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : ["Creative Tools"];
 
-    const level = parts[10]?.trim() || 'All Levels';
-    const students = parts[11]?.trim() || '10k';
-    const badge = parts[13]?.trim() || '';
+    const level = parts[10]?.trim() || "All Levels";
+    const students = parts[11]?.trim() || "10k";
+    const badge = parts[13]?.trim() || "";
 
     courses.push({
       id,
@@ -119,7 +134,7 @@ export function parseCoursesCSV(csvText) {
       level,
       students,
       image: COURSE_IMAGES[String(id)] || defaultHeroImg,
-      badge
+      badge,
     });
   }
 
@@ -131,7 +146,7 @@ export function parseCoursesCSV(csvText) {
  */
 export async function loadCourses() {
   try {
-    const response = await fetch('/courses.csv');
+    const response = await fetch(`${import.meta.env.BASE_URL}courses.csv`);
     if (!response.ok) {
       return parseCoursesCSV(FALLBACK_CSV);
     }

@@ -246,7 +246,7 @@ export default function LandingPage({ onNavigate }) {
       {/* Footer */}
       <Footer
         onNavigate={onNavigate}
-        onNavigateToTab={(tab) => onNavigate('products')}
+        onNavigateToTab={(_tab) => onNavigate('products')}
       />
     </div>
   );

@@ -1,8 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Check, ArrowRight, X, Sparkles } from 'lucide-react';
-import { launchConfetti } from '../../utils/confetti';
+import React, { useEffect, useRef, useState } from "react";
+import { ArrowRight, X, Sparkles } from "lucide-react";
+import { launchConfetti } from "../../utils/confetti";
+import useDialog from "../../hooks/useDialog";
 
-export default function EnrollmentCelebration({ isOpen, enrolledCourses = [], orderId, onStartLearning, onClose }) {
+export default function EnrollmentCelebration({
+  isOpen,
+  enrolledCourses = [],
+  orderId,
+  onStartLearning,
+  onClose,
+}) {
+  const dialogRef = useRef(null);
+  useDialog(isOpen, onClose, dialogRef);
   const canvasRef = useRef(null);
   const cleanupRef = useRef(null);
   const [showContent, setShowContent] = useState(false);
@@ -53,22 +62,23 @@ export default function EnrollmentCelebration({ isOpen, enrolledCourses = [], or
     };
   }, [isOpen, enrolledCourses.length]);
 
-  // Close on Escape
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose?.();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   return (
-    <div className="enrollment-celebration" role="dialog" aria-modal="true" aria-labelledby="celebration-title">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      className="enrollment-celebration"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="celebration-title"
+    >
       {/* Confetti canvas fills the viewport */}
-      <canvas ref={canvasRef} className="celebration-canvas" aria-hidden="true" />
+      <canvas
+        ref={canvasRef}
+        className="celebration-canvas"
+        aria-hidden="true"
+      />
 
       {/* Close button top-right */}
       <button
@@ -80,11 +90,18 @@ export default function EnrollmentCelebration({ isOpen, enrolledCourses = [], or
         <X size={18} />
       </button>
 
-      <div className={`celebration-content ${showContent ? 'is-visible' : ''}`}>
+      <div className={`celebration-content ${showContent ? "is-visible" : ""}`}>
         {/* Animated checkmark */}
         <div className="celebration-checkmark">
           <svg viewBox="0 0 52 52" className="checkmark-svg" aria-hidden="true">
-            <circle cx="26" cy="26" r="24" fill="none" strokeWidth="2" className="checkmark-circle" />
+            <circle
+              cx="26"
+              cy="26"
+              r="24"
+              fill="none"
+              strokeWidth="2"
+              className="checkmark-circle"
+            />
             <path
               d="M14 27 L23 35 L38 18"
               fill="none"
@@ -101,9 +118,16 @@ export default function EnrollmentCelebration({ isOpen, enrolledCourses = [], or
           You're in!
         </h2>
         <p className="celebration-subheadline">
-          <Sparkles size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
+          <Sparkles
+            size={14}
+            style={{
+              display: "inline",
+              verticalAlign: "middle",
+              marginRight: "6px",
+            }}
+          />
           {enrolledCourses.length === 1
-            ? 'Your new course is ready in My Learning.'
+            ? "Your new course is ready in My Learning."
             : `Your ${enrolledCourses.length} new courses are ready in My Learning.`}
         </p>
 
@@ -113,13 +137,21 @@ export default function EnrollmentCelebration({ isOpen, enrolledCourses = [], or
             {enrolledCourses.map((course, index) => (
               <div
                 key={course.id}
-                className={`celebration-course-item ${index < visibleCourses ? 'is-visible' : ''}`}
+                className={`celebration-course-item ${index < visibleCourses ? "is-visible" : ""}`}
                 style={{ transitionDelay: `${index * 40}ms` }}
               >
-                <img src={course.image} alt="" className="celebration-course-thumb" />
+                <img
+                  src={course.image}
+                  alt=""
+                  className="celebration-course-thumb"
+                />
                 <div className="celebration-course-text">
-                  <span className="celebration-course-category">{course.category}</span>
-                  <span className="celebration-course-title">{course.title}</span>
+                  <span className="celebration-course-category">
+                    {course.category}
+                  </span>
+                  <span className="celebration-course-title">
+                    {course.title}
+                  </span>
                 </div>
               </div>
             ))}
@@ -146,9 +178,7 @@ export default function EnrollmentCelebration({ isOpen, enrolledCourses = [], or
         </div>
 
         {/* Order reference (subtle) */}
-        {orderId && (
-          <p className="celebration-order-ref">Order {orderId}</p>
-        )}
+        {orderId && <p className="celebration-order-ref">Order {orderId}</p>}
       </div>
     </div>
   );
