@@ -1104,7 +1104,7 @@ progress::-moz-progress-bar {
 .fd-learning-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px 24px;
   flex-wrap: wrap;
 }
 .fd-cert-ready {
@@ -2524,7 +2524,7 @@ progress::-moz-progress-bar {
     font-size: 17px;
   }
   .fd-learning-actions {
-    gap: 10px;
+    gap: 16px 24px;
   }
   .fd-learning-actions .fd-text-button {
     font-size: 10px;
