@@ -1111,9 +1111,9 @@ progress::-moz-progress-bar {
   background: var(--accent-emerald);
   color: #052e24;
 }
-.fd-achievement-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.fd-achievement-list {
+  display: flex;
+  flex-direction: column;
   gap: 22px;
 }
 .fd-achievement {
@@ -1121,10 +1121,10 @@ progress::-moz-progress-bar {
   border: 1px solid #35376b;
   border-radius: 12px;
   padding: 30px;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
 }
 .fd-achievement > svg {
   color: var(--accent-amber);
@@ -1133,7 +1133,10 @@ progress::-moz-progress-bar {
   font-size: 20px;
   font-weight: 500;
 }
-.fd-achievement > p {
+.fd-achievement-copy h2 {
+  margin: 7px 0;
+}
+.fd-achievement-copy p {
   color: #acb7c7;
 }
 .fd-cart-grid {
@@ -2529,8 +2532,18 @@ progress::-moz-progress-bar {
   .fd-learning-actions .fd-text-button {
     font-size: 10px;
   }
-  .fd-achievement-grid {
-    grid-template-columns: 1fr;
+  .fd-achievement {
+    grid-template-columns: 32px minmax(0, 1fr);
+    padding: 20px;
+    gap: 16px;
+  }
+  .fd-achievement > svg {
+    width: 32px;
+    height: 32px;
+  }
+  .fd-achievement > button {
+    grid-column: 2;
+    justify-self: start;
   }
   .fd-detail h1 {
     font-size: 35px;
@@ -2877,16 +2890,6 @@ body {
     padding-top: 0;
   }
 }
-/* Open immediately so navigation never waits for a background-tab animation. */
-@media (max-width: 780px) {
-  .fd-sidebar {
-    transition: none;
-  }
-  .fd-sidebar.is-open {
-    transform: translateX(0);
-  }
-}
-
 /* Restore the required list catalogue and original shared footer. */
 .fd-course-list {
   display: flex;
@@ -2963,7 +2966,17 @@ body {
 .landing-page-container #about .section-sub + .section-sub { margin-top: 20px; }
 .fd-collapse-toggle { flex-shrink: 0; }
 @media (min-width: 781px) {
-  .fd-sidebar-collapsed .fd-sidebar { visibility: hidden; width: 0; padding: 0; border: 0; }
+  .fd-sidebar {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform 280ms ease, visibility 0s;
+  }
+  .fd-main { transition: margin-left 280ms ease; }
+  .fd-sidebar-collapsed .fd-sidebar {
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 280ms ease, visibility 0s linear 280ms;
+  }
   .fd-sidebar-collapsed .fd-main { margin-left: 0; max-width: 1640px; }
 }
 @media (max-width: 1100px) {
@@ -2981,6 +2994,14 @@ body {
   .fd-course-list .fd-course-bottom strong { font-size: 21px; }
 }
 @media (max-width: 780px) {
+  .fd-sidebar {
+    visibility: hidden;
+    transition: transform 280ms ease, visibility 0s linear 280ms;
+  }
+  .fd-sidebar.is-open {
+    visibility: visible;
+    transition-delay: 0s;
+  }
   .fd-collapse-toggle { display: none; }
   .fd-course-list .fd-course-card { grid-template-columns: 140px minmax(0, 1fr); }
 }
@@ -2999,6 +3020,9 @@ body {
 
 /* Keep the restored About page on the same document scroll as the workspace. */
 .landing-page-container { height: auto; overflow: visible; }
+@media (prefers-reduced-motion: reduce) {
+  .fd-sidebar, .fd-main { transition: none !important; }
+}
 .landing-course-card[role="button"] { cursor: pointer; }
 .landing-course-card:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 4px; }
 @media (max-width: 900px) {

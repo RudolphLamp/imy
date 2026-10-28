@@ -1192,16 +1192,18 @@ export default function ProductsView({
               <p>A little reminder of the work you put in.</p>
             </div>
             {completed.length ? (
-              <div className="fd-achievement-grid">
+              <div className="fd-achievement-list">
                 {completed.map((entry) => {
                   const c = courses.find((item) => item.id === entry.courseId);
                   return (
                     c && (
                       <article className="fd-achievement" key={c.id}>
                         <Award size={40} />
-                        <span className="fd-kicker">COURSE COMPLETE</span>
-                        <h2>{c.title}</h2>
-                        <p>{user.name}</p>
+                        <div className="fd-achievement-copy">
+                          <span className="fd-kicker">COURSE COMPLETE</span>
+                          <h2>{c.title}</h2>
+                          <p>{user.name}</p>
+                        </div>
                         <button
                           className="fd-primary"
                           onClick={() => setCertificateId(c.id)}
