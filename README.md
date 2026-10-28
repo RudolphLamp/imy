@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite, usually **http://localhost:5173**. A fresh browser opens the Jane Smith demo workspace, with two in-progress courses and clearly labelled sample account activity. No credentials are needed to review the prototype. To test a new account, sign out, choose **Create an account**, or use **Explore with demo access** to return to Jane's workspace.
+Open the local URL printed by Vite, usually **http://localhost:5173**. The app opens on the landing/About page, with **Sign In** and **Explore Courses** visible in the header. Choose **Sign In** to review login and create an account, or **Explore Courses** to open the Jane Smith demo workspace with two in-progress courses and clearly labelled sample activity. Existing browser accounts and learning progress remain saved.
 
 ```sh
 npm run lint       # Static checks
@@ -24,7 +24,7 @@ The build uses relative asset paths so it can also be served from a repository s
 
 ## Review the final experience
 
-1. **Find a course:** choose **Find your next course**, search for `motion`, and open **Kinetic Typography & Brand Identity**. Expand the clearly marked curriculum rows. Search also matches tools, categories, descriptions, and instructors. Advanced level/price filters sit behind **Filters**.
+1. **Find a course:** from the landing page, choose **Explore Courses**, then **Find your next course**, search for `motion`, and open **Kinetic Typography & Brand Identity**. Expand the clearly marked curriculum rows. Search also matches tools, categories, descriptions, and instructors. Advanced level/price filters sit behind **Filters**.
 2. **Save or purchase:** use the heart to save the course to **Wishlist**, or **Add to cart**. Open the header cart, choose **Review demo checkout**, read the no-payment explanation, and **Confirm demo order**. The enrolment celebration leads to **My Learning** or the order receipt.
 3. **Continue learning:** open a course in **My Learning**. The lesson workspace contains a practice brief, module navigation, saved personal notes, and an actual downloadable text guide. It is an intentionally labelled teaching-system shell, as allowed by the assignment.
 4. **Finish a course:** choose **Mark complete & continue** for each of the four modules. Progress reaches 25%, 50%, 75%, then 100%, with milestone feedback. The certificate ceremony opens **immediately on the final module**. Download the PNG or reopen it later from **Certificates**. Reviewing completed material never resets progress.

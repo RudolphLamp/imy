@@ -141,7 +141,7 @@ function Auth({ mode, onMode, onSuccess }) {
   return (
     <div className="fd-auth">
       <aside className="fd-auth-art">
-        <Brand onClick={() => onMode("landing")} />
+        <Brand onClick={() => onMode("about")} />
         <div>
           <span className="fd-kicker">A SPACE FOR YOUR NEXT BIG IDEA</span>
           <h1>
@@ -158,7 +158,7 @@ function Auth({ mode, onMode, onSuccess }) {
       </aside>
       <main className="fd-auth-form">
         <div className="fd-auth-form-inner">
-          <button className="fd-text-button" onClick={() => onMode("landing")}>
+          <button className="fd-text-button" onClick={() => onMode("about")}>
             <ArrowLeft size={15} /> Back to Create.IT
           </button>
           <h2>{registering ? "Start your next chapter." : "Welcome back."}</h2>
@@ -338,15 +338,7 @@ function Home({ onNavigate, onNavigateToTab }) {
 
 export default function App() {
   const [user, setUser] = useState(getUser);
-  const [view, setView] = useState(() => {
-    try {
-      return localStorage.getItem("createit_signed_out") === "true"
-        ? "login"
-        : "products";
-    } catch {
-      return "products";
-    }
-  });
+  const [view, setView] = useState("about");
   const [workspaceStart, setWorkspaceStart] = useState({ tab: "catalog", section: "overview" });
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
   const [toast, setToast] = useState(null);
