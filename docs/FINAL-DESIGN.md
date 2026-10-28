@@ -4,7 +4,7 @@ Create.IT - IMY 320: Multimedia Trends, University of Pretoria, 2026.
 
 ## Design direction
 
-The final workspace keeps the established dark creative identity, with the original indigo and cyan accents, restrained borders, consistent typography, and more space around the primary content. The orbital hero is drawn in CSS. Course photography provides a clear visual entry to each subject. The catalogue, learning dashboard, wishlist, cart, account hub, and certificates share navigation and interaction styles.
+The final workspace keeps the established dark creative identity, with the original indigo and cyan accents, restrained borders, consistent typography, and more space around the primary content. The orbital hero is drawn in CSS. Course photography provides a clear visual entry to each subject. The catalogue and wishlist retain a row-based list view, while My Learning retains its course progress list. The original multi-column footer and About page remain accessible from the workspace. The catalogue, learning dashboard, wishlist, cart, account hub, and certificates share navigation and interaction styles.
 
 The first action is now explicit: **Find your next course** moves focus to the course search. Categories remain available in one place, and advanced level/price options appear on request. This reduces the simultaneous competing controls identified by participants while preserving useful filtering.
 
@@ -30,13 +30,13 @@ The enrolment celebration remains at the commitment moment, following order conf
 
 The implemented journeys include demo entry, local account registration/sign-in/sign-out, course search, category/level/price filtering, sorting, course details, wishlist, cart removal, review/confirmation, order persistence, receipts, progress persistence, module continuation, notes, resource download, completion, certificate download, FAQs, local support questions, editable reviews, and profile updates.
 
-The header and side navigation are anchored to the viewport; the document owns page scrolling. The sidebar has its own overflow for short screens. Mobile navigation uses an explicit toggle and backdrop. Modal dialogs move and contain keyboard focus, support Escape, restore focus when the initiating control remains available, and lock background scrolling. Native labels, progress elements, disclosure controls, and live feedback support keyboard and assistive-technology users.
+The header and side navigation are anchored to the viewport; the document owns page scrolling. The sidebar has its own overflow for short screens. A desktop header chevron collapses and expands it, with the preference saved in browser storage. Mobile navigation uses an explicit toggle and backdrop. Modal dialogs move and contain keyboard focus, support Escape, restore focus when the initiating control remains available, and lock background scrolling. Native labels, progress elements, disclosure controls, and live feedback support keyboard and assistive-technology users.
 
 ## Verification
 
 Automated checks: `npm run lint`, `npm test`, and `npm run build`. The progress regression suite verifies the full 25/50/75/100 sequence, duplicate completion, legacy percentage records, out-of-order modules, and invalid indexes. These specifically protect the completion failure found in usability testing.
 
-Browser verification covers course search and details, cart/checkout/enrolment, lesson continuation after refresh, saved notes, immediate completion ceremony, the generated PNG download, wishlist persistence, order receipts, local registration, rejected incorrect passwords, and successful sign-in. Responsive layout checks cover 320, 390, 768, and 1024 CSS pixel containers, plus desktop. Navigation anchoring is checked after scrolling 900 pixels. The bundled course images remove remote image dependencies from the final build.
+Browser verification covers course search and details, cart/checkout/enrolment, lesson continuation after refresh, saved notes, immediate completion ceremony, the generated PNG download, wishlist persistence, order receipts, local registration, rejected incorrect passwords, and successful sign-in. Responsive layout checks cover 320, 390, 768, and 1024 CSS pixel containers, plus desktop. Navigation anchoring is checked after scrolling 900 pixels. Checks also cover desktop collapse/expand and persistence after refresh, mobile drawer navigation, list curriculum expansion, restored footer links, and travel from About back to My Learning. The bundled course images remove remote image dependencies from the final build.
 
 ## Prototype boundaries
 

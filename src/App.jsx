@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -8,6 +8,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import ProductsView from "./components/products/ProductsView";
+import Footer from "./components/Footer";
+
+const LandingPage = lazy(() => import("./components/LandingPage"));
 
 const demoUser = {
   id: "jane.smith@createit.academy",
@@ -265,11 +268,12 @@ function Auth({ mode, onMode, onSuccess }) {
   );
 }
 
-function Home({ onNavigate }) {
+function Home({ onNavigate, onNavigateToTab }) {
   return (
     <div className="fd-home">
       <header>
         <Brand onClick={() => onNavigate("products")} />
+        <button className="fd-text-button" onClick={() => onNavigate("about")}>About Create.IT</button>
         <button className="fd-secondary" onClick={() => onNavigate("login")}>
           Sign in <ArrowRight size={15} />
         </button>
@@ -327,6 +331,7 @@ function Home({ onNavigate }) {
           and Google Fonts. Not an official university learning service.
         </small>
       </main>
+      <Footer onNavigate={onNavigate} onNavigateToTab={onNavigateToTab} />
     </div>
   );
 }
@@ -342,6 +347,8 @@ export default function App() {
       return "products";
     }
   });
+  const [workspaceStart, setWorkspaceStart] = useState({ tab: "catalog", section: "overview" });
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [view]);
   const [toast, setToast] = useState(null);
   const timer = useRef(null);
   const showToast = useCallback((message, type = "info") => {
@@ -383,6 +390,14 @@ export default function App() {
     setView("login");
     showToast("You’re signed out. Your learning is saved on this device.");
   };
+  const openWorkspace = (tab = "catalog", section = "overview") => {
+    setWorkspaceStart({ tab, section });
+    enter(user);
+  };
+  const navigatePublic = (target) => {
+    if (target === "products") openWorkspace();
+    else setView(target);
+  };
   return (
     <div className="app-container">
       {toast && (
@@ -402,13 +417,15 @@ export default function App() {
           onLogout={logout}
           onShowToast={showToast}
           onNavigateView={setView}
+          initialTab={workspaceStart.tab}
+          initialSection={workspaceStart.section}
         />
+      ) : view === "about" ? (
+        <Suspense fallback={<main className="fd-loading" role="status">Opening About Create.IT...</main>}>
+          <LandingPage onNavigate={navigatePublic} onNavigateToTab={openWorkspace} />
+        </Suspense>
       ) : view === "landing" ? (
-        <Home
-          onNavigate={(target) =>
-            target === "products" ? enter(user) : setView(target)
-          }
-        />
+        <Home onNavigate={navigatePublic} onNavigateToTab={openWorkspace} />
       ) : (
         <Auth key={view} mode={view} onMode={setView} onSuccess={enter} />
       )}

@@ -74,7 +74,7 @@ export default function Footer({ onNavigate, onNavigateToTab }) {
               <button
                 type="button"
                 onClick={() => {
-                  handleNav('landing');
+                  handleNav('about');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >

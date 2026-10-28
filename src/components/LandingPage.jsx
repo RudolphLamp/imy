@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import Footer from './Footer';
 
-export default function LandingPage({ onNavigate }) {
+export default function LandingPage({ onNavigate, onNavigateToTab }) {
   const courses = [
     {
       icon: Film,
@@ -69,8 +69,8 @@ export default function LandingPage({ onNavigate }) {
     },
     {
       icon: Award,
-      title: 'Certified Diplomas',
-      desc: 'Earn industry-recognized credentials to boost your professional portfolio.'
+      title: 'Completion Certificates',
+      desc: 'Celebrate finished courses with downloadable prototype completion certificates.'
     }
   ];
 
@@ -162,16 +162,16 @@ export default function LandingPage({ onNavigate }) {
         {/* Stats Strip */}
         <div className="landing-stats-strip">
           <div className="landing-stat-card">
-            <h3>240+</h3>
+            <h3>12</h3>
             <p>Courses Available</p>
           </div>
           <div className="landing-stat-card">
-            <h3>50k+</h3>
-            <p>Active Students</p>
+            <h3>10</h3>
+            <p>Creative categories</p>
           </div>
           <div className="landing-stat-card">
-            <h3>98%</h3>
-            <p>Satisfaction Rate</p>
+            <h3>100%</h3>
+            <p>Demo checkout</p>
           </div>
           <div className="landing-stat-card">
             <h3>4.8 <Star size={15} fill="#fbbf24" stroke="none" style={{ display: 'inline', verticalAlign: 'middle' }} /></h3>
@@ -194,6 +194,14 @@ export default function LandingPage({ onNavigate }) {
             return (
               <motion.div 
                 key={idx}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onNavigate('products');
+                  }
+                }}
                 className="landing-course-card"
                 whileHover={{ y: -6, borderColor: 'rgba(99, 102, 241, 0.5)' }}
                 onClick={() => onNavigate('products')}
@@ -243,10 +251,19 @@ export default function LandingPage({ onNavigate }) {
         </div>
       </section>
 
+      <section id="about" className="landing-features-section" aria-labelledby="about-heading">
+        <div className="section-header-center">
+          <span className="section-tag-pill">ABOUT CREATE.IT</span>
+          <h2 id="about-heading" className="section-title">A space for creative learning.</h2>
+          <p className="section-sub">Create.IT is our IMY 320 Multimedia Trends group design project at the University of Pretoria. Explore multimedia courses, save your favourites, track your learning and celebrate each completed course.</p>
+          <p className="section-sub">This student prototype stores activity in your browser. Checkout requires no real payment, and completion certificates are prototype artifacts.</p>
+        </div>
+      </section>
+
       {/* Footer */}
       <Footer
         onNavigate={onNavigate}
-        onNavigateToTab={(_tab) => onNavigate('products')}
+        onNavigateToTab={onNavigateToTab}
       />
     </div>
   );

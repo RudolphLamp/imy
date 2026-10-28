@@ -8,6 +8,8 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Compass,
   GraduationCap,
@@ -39,6 +41,7 @@ import {
   sampleReviews,
 } from "../../data/customerMockData";
 import fallbackImage from "../../assets/hero.png";
+import Footer from "../Footer";
 
 const money = (amount) =>
   new Intl.NumberFormat("en-ZA", {
@@ -173,6 +176,8 @@ export default function ProductsView({
   onLogout,
   onShowToast,
   onNavigateView,
+  initialTab = "catalog",
+  initialSection = "overview",
 }) {
   const prefix = `createit_${encodeURIComponent((user.id || user.email).toLowerCase())}_`;
   const demo = user.email === DEMO_EMAIL;
@@ -181,10 +186,18 @@ export default function ProductsView({
   const [tab, setTab] = useState(() =>
     new URLSearchParams(location.search).get("view") === "customer"
       ? "customer"
-      : "catalog",
+      : initialTab,
   );
-  const [section, setSection] = useState("overview");
+  const [section, setSection] = useState(initialSection);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem("createit_sidebar_collapsed") === "true"; }
+    catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("createit_sidebar_collapsed", String(sidebarCollapsed)); }
+    catch { /* Navigation remains usable without storage. */ }
+  }, [sidebarCollapsed]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("popular");
@@ -467,6 +480,7 @@ export default function ProductsView({
         <h3>
           <button onClick={() => openCourse(c.id)}>{c.title}</button>
         </h3>
+        <p className="fd-course-description">{c.description}</p>
         <p className="fd-instructor">with {c.instructor}</p>
         <div className="fd-course-meta">
           <span>
@@ -479,6 +493,14 @@ export default function ProductsView({
           </span>
           <span>{c.level === "Beginner to Pro" ? "Beginner" : c.level}</span>
         </div>
+        <div className="fd-course-tools" aria-label="Course tools">
+          {c.tools.map((tool) => <span key={tool}>{tool}</span>)}
+        </div>
+        <details className="fd-list-curriculum">
+          <summary>View curriculum <ChevronDown size={15} /></summary>
+          <ol>{c.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ol>
+        </details>
+      </div>
         <div className="fd-course-bottom">
           <div>
             <strong>{money(c.price)}</strong>
@@ -501,17 +523,29 @@ export default function ProductsView({
               <ShoppingBag size={14} />
             )}
           </button>
+          <button className="fd-text-button" onClick={() => openCourse(c.id)}>
+            View details <ArrowRight size={14} />
+          </button>
         </div>
-      </div>
     </article>
   );
 
   return (
-    <div className="fd-app">
+    <div className={`fd-app ${sidebarCollapsed ? "fd-sidebar-collapsed" : ""}`}>
       <a className="fd-skip" href="#main-content">
         Skip to content
       </a>
       <header className="fd-header">
+        <button
+          className="fd-collapse-toggle fd-icon-button"
+          aria-label={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
+          title={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
+          aria-expanded={!sidebarCollapsed}
+          aria-controls="main-navigation"
+          onClick={() => setSidebarCollapsed((value) => !value)}
+        >
+          {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
         <button
           className="fd-menu-toggle fd-icon-button"
           aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
@@ -626,6 +660,9 @@ export default function ProductsView({
           >
             <User size={18} />
             My account
+          </button>
+          <button onClick={() => onNavigateView("about")}>
+            <Sparkles size={18} /> About Create.IT
           </button>
         </nav>
         <div className="fd-sidebar-bottom">
@@ -996,7 +1033,7 @@ export default function ProductsView({
                 </label>
               </div>
               {filtered.length ? (
-                <div className="fd-course-grid">{filtered.map(renderCard)}</div>
+                <div className="fd-course-list">{filtered.map(renderCard)}</div>
               ) : (
                 <EmptyState
                   icon={Search}
@@ -1132,7 +1169,7 @@ export default function ProductsView({
               <p>All the courses you want to come back to.</p>
             </div>
             {wishlist.length ? (
-              <div className="fd-course-grid">
+              <div className="fd-course-list">
                 {courses.filter((c) => wishlist.includes(c.id)).map(renderCard)}
               </div>
             ) : (
@@ -1316,33 +1353,7 @@ export default function ProductsView({
             onDismissOrder={() => setNewOrderId(null)}
           />
         )}
-        <footer className="fd-footer">
-          <div>
-            <button className="fd-brand" onClick={() => navigate("catalog")}>
-              Create<span className="fd-brand-dot">.IT</span>
-            </button>
-            <span>Stay curious. Keep creating.</span>
-          </div>
-          <p>
-            © 2026 Create.IT · IMY 320 final design · University of Pretoria
-            student project.
-          </p>
-          <div>
-            <button onClick={() => navigate("customer", "support")}>
-              Help & support
-            </button>
-            <button onClick={() => navigate("customer", "profile")}>
-              Your data
-            </button>
-            <button onClick={() => onNavigateView("landing")}>
-              About Create.IT
-            </button>
-          </div>
-          <small>
-            Built with React · Vite · Lucide · html2canvas · Google Fonts. Local
-            browser prototype; no real payments or emails.
-          </small>
-        </footer>
+        <Footer onNavigate={onNavigateView} onNavigateToTab={navigate} />
       </main>
       {checkoutOpen && (
         <Checkout
