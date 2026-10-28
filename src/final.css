@@ -1,13 +1,13 @@
 /* Group Design E: a focused creative workspace, informed by the four-user evaluation. */
 :root {
-  --fd-bg: #101116;
-  --fd-panel: #18191f;
-  --fd-panel-raised: #1f2028;
-  --fd-line: #2b2c35;
-  --fd-text: #f4f2f7;
-  --fd-muted: #a5a4b1;
-  --fd-purple: #c7b5fa;
-  --fd-purple-ink: #211739;
+  --fd-bg: var(--bg-dark-panel);
+  --fd-panel: var(--bg-card);
+  --fd-panel-raised: var(--input-bg);
+  --fd-line: var(--bg-card-border);
+  --fd-text: var(--text-white);
+  --fd-muted: var(--text-muted);
+  --fd-purple: var(--primary-purple);
+  --fd-purple-ink: var(--text-white);
   --font-sans: "Plus Jakarta Sans", sans-serif;
   --font-display: "Outfit", sans-serif;
 }
@@ -45,8 +45,8 @@ button svg {
   flex-shrink: 0;
 }
 ::selection {
-  background: #c7b5fa;
-  color: #211739;
+  background: var(--primary-purple);
+  color: var(--text-white);
 }
 .fd-app {
   min-height: 100vh;
@@ -57,7 +57,7 @@ button svg {
 .fd-header {
   height: 80px;
   border-bottom: 1px solid var(--fd-line);
-  background: #131419;
+  background: var(--bg-dark-hero);
   display: flex;
   align-items: center;
   gap: 24px;
@@ -85,7 +85,7 @@ button svg {
   place-items: center;
   border-radius: 10px;
   background: var(--fd-purple);
-  color: #241c36;
+  color: var(--text-white);
   margin-right: 10px;
 }
 .fd-brand-dot {
@@ -98,7 +98,7 @@ button svg {
 }
 .fd-header-caption {
   font-size: 12px;
-  color: #9c9ba9;
+  color: #8f9fb5;
 }
 .fd-header-right {
   margin-left: auto;
@@ -112,14 +112,14 @@ button svg {
   display: flex;
   gap: 7px;
   align-items: center;
-  color: #a5a3af;
+  color: #98a6ba;
 }
 .fd-demo-label > span,
 .fd-live-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #c5b3f5;
+  background: var(--accent-cyan);
   display: inline-block;
 }
 .fd-header-cart {
@@ -134,7 +134,7 @@ button svg {
 .fd-header-cart b {
   font-size: 10px;
   background: var(--fd-purple);
-  color: #241c36;
+  color: var(--text-white);
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -142,8 +142,8 @@ button svg {
   place-items: center;
 }
 .fd-avatar {
-  border: 1px solid #5c516f;
-  background: #3b334c;
+  border: 1px solid #45477b;
+  background: #292b56;
   border-radius: 50%;
   width: 34px;
   height: 34px;
@@ -152,7 +152,7 @@ button svg {
   flex-shrink: 0;
   font-size: 11px;
   letter-spacing: 0.4px;
-  color: #e0d3ff;
+  color: #d4d8fe;
 }
 .fd-sidebar {
   position: fixed;
@@ -160,7 +160,7 @@ button svg {
   bottom: 0;
   left: 0;
   width: 236px;
-  background: #131419;
+  background: var(--bg-dark-hero);
   border-right: 1px solid var(--fd-line);
   padding: 33px 18px 18px;
   display: flex;
@@ -171,7 +171,7 @@ button svg {
 .fd-sidebar-label {
   font-size: 9px;
   letter-spacing: 1.6px;
-  color: #898795;
+  color: #778aa5;
   display: block;
   padding: 0 14px;
   margin-bottom: 15px;
@@ -191,25 +191,25 @@ button svg {
   border: 1px solid transparent;
   border-radius: 8px;
   text-align: left;
-  color: #aaa8b6;
+  color: #9facbf;
   font-size: 12px;
   font-weight: 500;
 }
 .fd-sidebar nav > button:hover {
-  color: #eee9fa;
-  background: #1b1b24;
+  color: #e5e7fe;
+  background: #0f1020;
 }
 .fd-sidebar nav > button.active {
-  color: #d2c1ff;
-  background: #272332;
-  border-color: #3a324a;
+  color: var(--accent-cyan);
+  background: #15152b;
+  border-color: #282a54;
 }
 .fd-sidebar nav > button b {
   margin-left: auto;
   font-size: 10px;
   font-weight: 500;
-  color: #cdbbf6;
-  background: #3c334d;
+  color: var(--accent-cyan);
+  background: #292a57;
   min-width: 20px;
   text-align: center;
   border-radius: 5px;
@@ -226,14 +226,14 @@ button svg {
 }
 .fd-creative-note {
   padding: 17px 15px;
-  border: 1px solid #393243;
+  border: 1px solid #2a2b4b;
   border-radius: 10px;
-  background: linear-gradient(130deg, #26212f, #1b1b23);
+  background: linear-gradient(130deg, #131429, #0f101f);
 }
 .fd-creative-note > span {
   font-size: 8px;
   letter-spacing: 1.05px;
-  color: #c6b3ed;
+  color: var(--accent-cyan);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -252,7 +252,7 @@ button svg {
   font-size: 10px;
   background: none;
   border: 0;
-  color: #cbb9f5;
+  color: var(--primary-purple);
 }
 .fd-sidebar-user {
   display: flex;
@@ -281,11 +281,11 @@ button svg {
 .fd-sidebar-user small {
   font-size: 9px;
   display: block;
-  color: #908c9e;
+  color: #8091aa;
   margin-top: 1px;
 }
 .fd-sidebar-user > svg {
-  color: #908c9e;
+  color: #8091aa;
 }
 .fd-main {
   margin-left: 236px;
@@ -300,19 +300,19 @@ button svg {
   display: flex;
   gap: 12px;
   font-size: 10px;
-  color: #92909e;
+  color: #8294ac;
   margin-bottom: 24px;
 }
 .fd-breadcrumb strong {
   font-weight: 500;
-  color: #c7c2d2;
+  color: #bfc8d5;
 }
 .fd-breadcrumb > span {
-  color: #53505e;
+  color: #3f406f;
 }
 .fd-hero {
-  border: 1px solid #3d354b;
-  background: #24202e;
+  border: 1px solid #2c2e54;
+  background: #131427;
   border-radius: 16px;
   position: relative;
   min-height: 352px;
@@ -330,7 +330,7 @@ button svg {
   line-height: 1.5;
   font-weight: 600;
   letter-spacing: 1.7px;
-  color: #bbb0cf;
+  color: #b3bdcc;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -348,7 +348,7 @@ button svg {
   color: var(--fd-purple);
 }
 .fd-hero-copy > p {
-  color: #bab3c6;
+  color: #afbaca;
   font-size: 12px;
   line-height: 1.9;
   margin-bottom: 23px;
@@ -375,25 +375,25 @@ button svg {
   color: var(--fd-purple-ink);
 }
 .fd-primary:hover {
-  background: #d7c8ff;
+  background: var(--primary-purple-hover);
   transform: translateY(-1px);
 }
 .fd-secondary {
-  background: #1c1d25;
-  border-color: #393843;
-  color: #c6c0d2;
+  background: #101021;
+  border-color: #2c2d4f;
+  color: #bec7d4;
 }
 .fd-secondary:hover,
 .fd-secondary.selected {
-  background: #2a2536;
-  border-color: #706182;
-  color: #e0d1ff;
+  background: #16172e;
+  border-color: #525491;
+  color: #d2d6fe;
 }
 .fd-hero-foot {
   display: flex;
   gap: 21px;
   margin-top: 23px;
-  color: #b6afc3;
+  color: #abb7c7;
   font-size: 9px;
 }
 .fd-hero-foot > span {
@@ -405,7 +405,7 @@ button svg {
   position: relative;
   isolation: isolate;
   min-height: 350px;
-  background: radial-gradient(ellipse at 60% 54%, #54406855, transparent 64%);
+  background: radial-gradient(ellipse at 60% 54%, #30327855, transparent 64%);
 }
 .fd-orb {
   position: absolute;
@@ -417,29 +417,29 @@ button svg {
   transform: translate(-50%, -50%) rotate(-28deg);
   background: radial-gradient(
     circle at 29% 24%,
-    #ebd9ff 0%,
-    #b699d7 13%,
-    #7c5ca1 32%,
-    #c5b4ef 44%,
-    #775c9c 56%,
-    #463251 72%,
-    #241d2b 92%
+    #e0f2fe 0%,
+    #38bdf8 13%,
+    #6366f1 32%,
+    #a5b4fc 44%,
+    #4f46e5 56%,
+    #312e81 72%,
+    #090a18 92%
   );
   box-shadow:
-    inset -16px -17px 30px #19101f88,
-    inset 6px 4px 13px #ffe4ff44,
-    0 16px 50px #100e1944;
+    inset -16px -17px 30px #09091b88,
+    inset 6px 4px 13px #e5e7fe44,
+    0 16px 50px #08081544;
 }
 .fd-orb:after {
   content: "";
   position: absolute;
   inset: 20px -28px;
-  border: 24px solid #bda0e2;
-  border-top-color: #d3b8f6;
-  border-bottom-color: #796092;
+  border: 24px solid #6366f1;
+  border-top-color: #7dd3fc;
+  border-bottom-color: #3730a3;
   border-radius: 50%;
   transform: rotate(19deg) rotateX(58deg);
-  box-shadow: 0 8px 16px #170d2733;
+  box-shadow: 0 8px 16px #08091f33;
 }
 .fd-orbit {
   position: absolute;
@@ -447,7 +447,7 @@ button svg {
   top: 46%;
   width: 340px;
   height: 160px;
-  border: 1px solid #93819f44;
+  border: 1px solid #7a8ca644;
   border-radius: 50%;
   transform: translate(-50%, -50%) rotate(-34deg);
 }
@@ -456,12 +456,12 @@ button svg {
   width: 290px;
   height: 310px;
   border-style: dashed;
-  border-color: #93819f33;
+  border-color: #7a8ca633;
   z-index: -1;
 }
 .fd-art-star {
   position: absolute;
-  color: #d8c1f2;
+  color: #b6bcfd;
   font-size: 30px;
 }
 .star-one {
@@ -479,11 +479,11 @@ button svg {
   left: 12%;
   right: 8%;
   max-width: 294px;
-  border: 1px solid #c1aad655;
+  border: 1px solid #979ee955;
   border-radius: 10px;
-  background: #322b3fe8;
+  background: #232447e8;
   backdrop-filter: blur(12px);
-  box-shadow: 0 12px 30px #0e0a1833;
+  box-shadow: 0 12px 30px #05061433;
   padding: 13px;
   display: flex;
   align-items: center;
@@ -493,20 +493,20 @@ button svg {
 }
 .fd-art-label small {
   display: block;
-  color: #b5a9c6;
+  color: #a9b5c6;
   letter-spacing: 0;
   font-size: 10px;
   margin-top: 3px;
 }
 .fd-art-label svg {
   margin-left: auto;
-  color: #cbb5e8;
+  color: #a6acf7;
 }
 .fd-art-swatch {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: conic-gradient(from 40deg, #b08ed3, #e5d5f2, #675275, #bea2d5);
+  background: conic-gradient(from 40deg, #6366f1, #bae6fd, #312e81, #38bdf8);
   transform: rotate(-10deg);
 }
 .fd-art-caption {
@@ -515,7 +515,7 @@ button svg {
   left: 32%;
   font-size: 7px;
   letter-spacing: 3px;
-  color: #9989ac;
+  color: #8697af;
 }
 .fd-resume {
   display: flex;
@@ -523,10 +523,10 @@ button svg {
   gap: 13px;
   width: 100%;
   margin: 19px 0 37px;
-  border: 1px solid #303039;
+  border: 1px solid #262743;
   border-radius: 10px;
   padding: 14px 17px;
-  background: #1a1b21;
+  background: #0e0f1e;
   text-align: left;
 }
 .fd-resume-icon {
@@ -534,9 +534,9 @@ button svg {
   place-items: center;
   width: 35px;
   height: 35px;
-  background: #2b2638;
+  background: #171830;
   border-radius: 8px;
-  color: #c6b3ed;
+  color: var(--accent-cyan);
 }
 .fd-resume strong {
   font-size: 11px;
@@ -545,12 +545,12 @@ button svg {
 .fd-resume small {
   display: block;
   font-size: 9px;
-  color: #96919f;
+  color: #8395ad;
   margin-top: 2px;
 }
 .fd-resume-link {
   margin-left: auto;
-  color: #c8b4ee;
+  color: var(--accent-cyan);
   font-size: 10px;
   display: flex;
   align-items: center;
@@ -569,7 +569,7 @@ button svg {
   margin: 0 0 21px;
 }
 .fd-section-heading .fd-kicker {
-  color: #93909f;
+  color: #8394ac;
   font-size: 8px;
   letter-spacing: 1.6px;
   margin-bottom: 8px;
@@ -586,7 +586,7 @@ button svg {
 }
 .fd-collection-count {
   font-size: 10px;
-  color: #96929f;
+  color: #8495ad;
 }
 .fd-discovery {
   display: flex;
@@ -596,17 +596,17 @@ button svg {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #1a1b22;
-  border: 1px solid #33313c;
+  background: #0f0f1e;
+  border: 1px solid #272846;
   border-radius: 8px;
   padding: 0 15px;
   min-height: 46px;
   flex: 1;
   min-width: 0;
-  color: #a69ab7;
+  color: #97a6ba;
 }
 .fd-search:focus-within {
-  border-color: #a691c2;
+  border-color: #98a7bb;
 }
 .fd-search input {
   background: none;
@@ -620,11 +620,11 @@ button svg {
   padding: 13px 0;
 }
 .fd-search input::placeholder {
-  color: #a7a1b0;
+  color: #97a6ba;
 }
 .fd-search-hint {
   font-size: 9px;
-  color: #86808e;
+  color: #6f839f;
   white-space: nowrap;
 }
 .fd-search button {
@@ -632,7 +632,7 @@ button svg {
   background: none;
   display: grid;
   place-items: center;
-  color: #bbb3c9;
+  color: #b1bccb;
 }
 .fd-filter-dot {
   width: 5px;
@@ -647,33 +647,33 @@ button svg {
   margin: 16px 0;
 }
 .fd-categories button {
-  background: #191a20;
-  border: 1px solid #303039;
+  background: #0e0e1d;
+  border: 1px solid #262743;
   border-radius: 6px;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 7px 11px;
   min-height: 33px;
-  color: #a6a1b2;
+  color: #98a7bb;
   font-size: 9px;
   white-space: nowrap;
 }
 .fd-categories button:hover {
-  color: #d2c5e4;
-  border-color: #71617f;
+  color: #b9bdf0;
+  border-color: #51538f;
 }
 .fd-categories button[aria-pressed="true"] {
-  background: #cbb9f5;
-  border-color: #cbb9f5;
-  color: #2c213d;
+  background: var(--primary-purple);
+  border-color: var(--primary-purple);
+  color: var(--text-white);
 }
 .fd-filters {
   display: flex;
   gap: 20px;
   align-items: end;
-  background: #1a1b22;
-  border: 1px solid #303039;
+  background: #0f0f1e;
+  border: 1px solid #262743;
   border-radius: 9px;
   padding: 16px;
   margin: 16px 0;
@@ -686,10 +686,10 @@ button svg {
 }
 .fd-filters select,
 .fd-results-bar select {
-  background: #1a1b22;
-  border: 1px solid #3e3a48;
+  background: #0f0f1e;
+  border: 1px solid #2f3053;
   border-radius: 5px;
-  color: #d4cddd;
+  color: #cdd4dd;
   padding: 9px;
   font-size: 10px;
   min-width: 0;
@@ -699,7 +699,7 @@ button svg {
   align-items: center;
   justify-content: space-between;
   font-size: 9px;
-  color: #9e98a8;
+  color: #8d9db3;
   margin: 20px 0 16px;
 }
 .fd-results-bar > label {
@@ -711,7 +711,7 @@ button svg {
   border: 0;
   padding: 4px;
   background: transparent;
-  color: #d0c8dd;
+  color: #cad1db;
   max-width: 160px;
 }
 .fd-results-bar button {
@@ -728,8 +728,8 @@ button svg {
   gap: 21px;
 }
 .fd-course-card {
-  background: #191a21;
-  border: 1px solid #30303a;
+  background: #0e0f1d;
+  border: 1px solid #262744;
   border-radius: 11px;
   overflow: hidden;
   display: flex;
@@ -739,14 +739,14 @@ button svg {
     transform 0.2s;
 }
 .fd-course-card:hover {
-  border-color: #675677;
+  border-color: #494b84;
   transform: translateY(-3px);
 }
 .fd-course-cover {
   position: relative;
   aspect-ratio: 1.7;
   overflow: hidden;
-  background: #2b2635;
+  background: #16172e;
 }
 .fd-image-link {
   width: 100%;
@@ -769,9 +769,9 @@ button svg {
   position: absolute;
   top: 12px;
   left: 12px;
-  background: #16121ce8;
+  background: #0b0c17e8;
   border: 1px solid #ffffff22;
-  color: #f1e5ff;
+  color: #e6e8fe;
   border-radius: 4px;
   padding: 4px 7px;
   font-size: 8px;
@@ -785,8 +785,8 @@ button svg {
   right: 11px;
   top: 11px;
   border: 1px solid #ffffff33;
-  background: #18131cbb;
-  color: #eee2ff;
+  background: #0b0c18bb;
+  color: #e3e5fe;
   width: 30px;
   height: 30px;
   display: grid;
@@ -794,8 +794,8 @@ button svg {
   border-radius: 50%;
 }
 .fd-heart.saved {
-  background: #d6c1f8;
-  color: #372342;
+  background: var(--primary-purple);
+  color: var(--text-white);
 }
 .fd-course-body {
   padding: 17px;
@@ -816,7 +816,7 @@ button svg {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #e0c68d;
+  color: var(--accent-amber);
   font-size: 9px;
 }
 .fd-course-body h3 {
@@ -839,10 +839,10 @@ button svg {
 }
 .fd-course-body h3 button:hover,
 .fd-cart-item h3 button:hover {
-  color: #d1baf5;
+  color: #b2b8fd;
 }
 .fd-instructor {
-  color: #a29baa;
+  color: #909fb5;
   font-size: 9px;
   margin-top: 6px;
 }
@@ -851,7 +851,7 @@ button svg {
   gap: 9px;
   flex-wrap: wrap;
   align-items: center;
-  color: #a29baa;
+  color: #909fb5;
   font-size: 8px;
   padding: 13px 0 16px;
   margin-bottom: auto;
@@ -865,7 +865,7 @@ button svg {
   margin-left: auto;
 }
 .fd-course-bottom {
-  border-top: 1px solid #303039;
+  border-top: 1px solid #262743;
   padding-top: 14px;
   display: flex;
   align-items: center;
@@ -881,13 +881,13 @@ button svg {
 .fd-course-bottom small {
   display: block;
   font-size: 7px;
-  color: #918998;
+  color: #7a8da7;
 }
 .fd-add {
-  border: 1px solid #494054;
+  border: 1px solid #35375f;
   border-radius: 5px;
-  background: #292331;
-  color: #d9c8f3;
+  background: #14152b;
+  color: #bec3fd;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -898,19 +898,19 @@ button svg {
   white-space: nowrap;
 }
 .fd-add:hover {
-  background: #c7b5fa;
-  color: #211739;
+  background: var(--primary-purple);
+  color: var(--text-white);
 }
 .fd-add.added {
   background: #222c2a;
   border-color: #3c544a;
-  color: #a9d6be;
+  color: var(--accent-emerald);
 }
 .fd-footer {
   margin-top: 62px;
   padding: 28px 0 24px;
-  border-top: 1px solid #2c2a34;
-  color: #9991a4;
+  border-top: 1px solid #171830;
+  color: #8697af;
   font-size: 9px;
 }
 .fd-footer > div:first-child {
@@ -930,11 +930,11 @@ button svg {
 .fd-footer button:not(.fd-brand) {
   background: none;
   border: 0;
-  color: #bbb1c9;
+  color: #b0bbca;
   font-size: 9px;
 }
 .fd-footer small {
-  color: #8f879a;
+  color: #7a8da7;
   font-size: 8px;
 }
 .fd-page-heading {
@@ -953,7 +953,7 @@ button svg {
 }
 .fd-page-heading > p {
   font-size: 12px;
-  color: #a69cae;
+  color: #93a2b7;
 }
 .fd-text-button {
   display: inline-flex;
@@ -961,15 +961,15 @@ button svg {
   gap: 8px;
   background: none;
   border: 0;
-  color: #c9b4e6;
+  color: var(--accent-cyan);
   font-size: 11px;
   padding: 5px 0;
 }
 .fd-text-button:hover {
-  color: #e3d6fa;
+  color: #d2d6fe;
 }
 .fd-muted {
-  color: #a79eb2;
+  color: #97a5b9;
   font-size: 12px;
   line-height: 1.8;
 }
@@ -979,8 +979,8 @@ button svg {
 .fd-empty {
   padding: 65px 24px;
   text-align: center;
-  background: #191a21;
-  border: 1px dashed #4b3f58;
+  background: #0e0f1d;
+  border: 1px dashed #353762;
   border-radius: 12px;
   margin: 20px 0;
 }
@@ -988,9 +988,9 @@ button svg {
   display: grid;
   place-items: center;
   margin: 0 auto 18px;
-  background: #30263f;
-  border: 1px solid #4e3d60;
-  color: #d0b7ef;
+  background: #171835;
+  border: 1px solid #2f316e;
+  color: #a9b0fd;
   width: 64px;
   height: 64px;
   border-radius: 18px;
@@ -1001,7 +1001,7 @@ button svg {
   font-weight: 400;
 }
 .fd-empty p {
-  color: #b3a6c1;
+  color: #a4b1c3;
   font-size: 12px;
   margin: 10px auto 22px;
   max-width: 420px;
@@ -1014,8 +1014,8 @@ button svg {
 }
 .fd-stats > div {
   padding: 22px;
-  background: #191a21;
-  border: 1px solid #303039;
+  background: #0e0f1d;
+  border: 1px solid #262743;
   border-radius: 10px;
   display: grid;
   grid-template-columns: 30px 1fr;
@@ -1023,7 +1023,7 @@ button svg {
 }
 .fd-stats svg {
   grid-row: span 2;
-  color: #bfa5df;
+  color: #949bf0;
   margin-top: 8px;
   width: 22px;
 }
@@ -1035,7 +1035,7 @@ button svg {
 }
 .fd-stats span {
   font-size: 10px;
-  color: #aa9fb6;
+  color: #9aa8bb;
 }
 .fd-learning-list {
   display: grid;
@@ -1046,8 +1046,8 @@ button svg {
   grid-template-columns: 220px minmax(0, 1fr);
   gap: 25px;
   padding: 22px;
-  background: #191a21;
-  border: 1px solid #303039;
+  background: #0e0f1d;
+  border: 1px solid #262743;
   border-radius: 12px;
 }
 .fd-learning-card > img {
@@ -1070,11 +1070,11 @@ button svg {
   display: flex;
   justify-content: space-between;
   font-size: 9px;
-  color: #b6a9c5;
+  color: #a9b5c5;
   margin-top: 16px;
 }
 .fd-progress-label strong {
-  color: #dac9ed;
+  color: #bec3f8;
 }
 progress {
   appearance: none;
@@ -1083,23 +1083,23 @@ progress {
   border: 0;
   border-radius: 5px;
   overflow: hidden;
-  background: #393040;
+  background: #282948;
   display: block;
   margin: 8px 0 17px;
 }
 progress::-webkit-progress-bar {
-  background: #393040;
+  background: #282948;
 }
 progress::-webkit-progress-value {
-  background: #bba0e2;
+  background: var(--primary-purple);
   border-radius: 5px;
   transition: width 0.4s;
 }
 progress::-moz-progress-bar {
-  background: #bba0e2;
+  background: var(--primary-purple);
 }
 .complete progress::-webkit-progress-value {
-  background: #a1cdb1;
+  background: var(--accent-emerald);
 }
 .fd-learning-actions {
   display: flex;
@@ -1108,8 +1108,8 @@ progress::-moz-progress-bar {
   flex-wrap: wrap;
 }
 .fd-cert-ready {
-  background: #cee0ba;
-  color: #263520;
+  background: var(--accent-emerald);
+  color: #052e24;
 }
 .fd-achievement-grid {
   display: grid;
@@ -1117,8 +1117,8 @@ progress::-moz-progress-bar {
   gap: 22px;
 }
 .fd-achievement {
-  background: linear-gradient(130deg, #292332, #1a1b21);
-  border: 1px solid #51415f;
+  background: linear-gradient(130deg, #15152b, #0e0f1e);
+  border: 1px solid #35376b;
   border-radius: 12px;
   padding: 30px;
   display: flex;
@@ -1127,14 +1127,14 @@ progress::-moz-progress-bar {
   gap: 15px;
 }
 .fd-achievement > svg {
-  color: #dfc48b;
+  color: var(--accent-amber);
 }
 .fd-achievement h2 {
   font-size: 20px;
   font-weight: 500;
 }
 .fd-achievement > p {
-  color: #bbacc7;
+  color: #acb7c7;
 }
 .fd-cart-grid {
   display: grid;
@@ -1151,9 +1151,9 @@ progress::-moz-progress-bar {
   gap: 18px;
   align-items: flex-start;
   padding: 20px;
-  border: 1px solid #37313d;
+  border: 1px solid #282946;
   border-radius: 10px;
-  background: #191a21;
+  background: #0e0f1d;
 }
 .fd-cart-item > img {
   width: 105px;
@@ -1171,7 +1171,7 @@ progress::-moz-progress-bar {
 .fd-cart-item > strong {
   white-space: nowrap;
   font-size: 15px;
-  color: #decaf3;
+  color: #c0c5fd;
 }
 .fd-cart-item .fd-muted {
   font-size: 9px;
@@ -1179,12 +1179,12 @@ progress::-moz-progress-bar {
 .fd-cart-item .fd-text-button {
   font-size: 9px;
   margin-top: 4px;
-  color: #b3a5c2;
+  color: #a4b1c3;
 }
 .fd-cart-summary {
-  border: 1px solid #45394e;
+  border: 1px solid #313256;
   border-radius: 12px;
-  background: #211d28;
+  background: #111123;
   padding: 24px;
 }
 .fd-cart-summary h2 {
@@ -1199,7 +1199,7 @@ progress::-moz-progress-bar {
   gap: 20px;
   align-items: center;
   padding: 18px 0;
-  border-top: 1px solid #44384e;
+  border-top: 1px solid #2f3157;
   font-size: 12px;
 }
 .fd-total strong {
@@ -1219,7 +1219,7 @@ progress::-moz-progress-bar {
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #afa0bc;
+  color: #9eabbe;
   font-size: 9px;
   line-height: 1.7;
   margin-top: 17px;
@@ -1245,14 +1245,14 @@ progress::-moz-progress-bar {
 .fd-detail-copy > p {
   font-size: 12px;
   line-height: 1.9;
-  color: #b3a6bf;
+  color: #a3b0c2;
 }
 .fd-detail-meta {
   display: flex;
   gap: 20px;
   align-items: center;
   font-size: 10px;
-  color: #bbaac6;
+  color: #aab6c6;
   margin-top: 20px;
   flex-wrap: wrap;
 }
@@ -1260,8 +1260,8 @@ progress::-moz-progress-bar {
   display: flex;
   gap: 24px;
   padding: 22px 0;
-  border-top: 1px solid #352d3c;
-  border-bottom: 1px solid #352d3c;
+  border-top: 1px solid #262743;
+  border-bottom: 1px solid #262743;
   margin: 25px 0;
 }
 .fd-detail-facts > span {
@@ -1269,7 +1269,7 @@ progress::-moz-progress-bar {
   align-items: center;
   gap: 8px;
   font-size: 10px;
-  color: #c5b5d2;
+  color: #b8c2cf;
 }
 .fd-detail-facts svg {
   width: 17px;
@@ -1281,13 +1281,13 @@ progress::-moz-progress-bar {
   margin: 30px 0 10px;
 }
 .fd-curriculum {
-  border: 1px solid #3b3143;
+  border: 1px solid #2a2b4a;
   border-radius: 9px;
   margin-top: 18px;
   overflow: hidden;
 }
 .fd-curriculum details + details {
-  border-top: 1px solid #3b3143;
+  border-top: 1px solid #2a2b4a;
 }
 .fd-curriculum summary {
   padding: 17px 15px;
@@ -1298,7 +1298,7 @@ progress::-moz-progress-bar {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  background: #1b1921;
+  background: #0e0f1d;
 }
 .fd-curriculum summary::-webkit-details-marker {
   display: none;
@@ -1310,7 +1310,7 @@ progress::-moz-progress-bar {
 }
 .fd-curriculum summary small {
   font-size: 9px;
-  color: #b79aca;
+  color: #8088e4;
 }
 .fd-curriculum details[open] summary svg {
   transform: rotate(180deg);
@@ -1318,17 +1318,17 @@ progress::-moz-progress-bar {
 .fd-curriculum details > p {
   font-size: 11px;
   line-height: 1.9;
-  color: #b2a2bf;
+  color: #a1aec0;
   padding: 16px 20px;
-  background: #16151c;
+  background: #0c0c19;
 }
 .fd-detail-buy {
   position: sticky;
   top: 106px;
-  border: 1px solid #49394f;
+  border: 1px solid #303258;
   border-radius: 12px;
   overflow: hidden;
-  background: #211c29;
+  background: #111123;
 }
 .fd-detail-buy > img {
   width: 100%;
@@ -1360,7 +1360,7 @@ progress::-moz-progress-bar {
 .fd-detail-buy ul {
   list-style: none;
   margin: 22px 0;
-  border-top: 1px solid #3f3347;
+  border-top: 1px solid #2b2c4f;
   padding-top: 18px;
   display: grid;
   gap: 13px;
@@ -1370,10 +1370,10 @@ progress::-moz-progress-bar {
   align-items: center;
   gap: 9px;
   font-size: 10px;
-  color: #c3b2d0;
+  color: #b5bfcd;
 }
 .fd-detail-buy li svg {
-  color: #a9c5ac;
+  color: var(--accent-emerald);
 }
 .fd-instructor-profile {
   display: flex;
@@ -1391,7 +1391,7 @@ progress::-moz-progress-bar {
 .fd-overlay {
   position: fixed;
   inset: 0;
-  background: #08060dce;
+  background: #03030bce;
   backdrop-filter: blur(9px);
   z-index: 150;
   display: flex;
@@ -1405,8 +1405,8 @@ progress::-moz-progress-bar {
   max-width: 560px;
   width: 100%;
   padding: 36px;
-  background: #201b28;
-  border: 1px solid #594266;
+  background: #101122;
+  border: 1px solid #343674;
   border-radius: 17px;
   max-height: calc(100dvh - 48px);
   overflow-y: auto;
@@ -1424,7 +1424,7 @@ progress::-moz-progress-bar {
   top: 18px;
   border: 0;
   background: none;
-  color: #d5c1e2;
+  color: #b4b9ef;
   display: grid;
   place-items: center;
   width: 30px;
@@ -1437,7 +1437,7 @@ progress::-moz-progress-bar {
   font-size: 9px;
   list-style: none;
   margin: 25px 0;
-  color: #a28cb4;
+  color: #8d9db3;
 }
 .fd-checkout-steps li {
   display: flex;
@@ -1445,30 +1445,30 @@ progress::-moz-progress-bar {
   gap: 6px;
 }
 .fd-checkout-steps li[aria-current] {
-  color: #e8d2fa;
+  color: #ced2fe;
 }
 .fd-demo-note {
   display: flex;
   gap: 13px;
   align-items: flex-start;
-  background: #2b2832;
-  border: 1px solid #534460;
+  background: #16172e;
+  border: 1px solid #393a6b;
   padding: 17px;
   border-radius: 8px;
   margin: 24px 0;
 }
 .fd-demo-note svg {
-  color: #bcd3ad;
+  color: var(--accent-emerald);
   flex-shrink: 0;
 }
 .fd-demo-note strong {
   font-size: 11px;
   font-weight: 500;
-  color: #e1d9e9;
+  color: #dbe0e7;
 }
 .fd-demo-note p {
   font-size: 10px;
-  color: #b9a8c7;
+  color: #a9b5c6;
   line-height: 1.8;
   margin-top: 7px;
 }
@@ -1478,7 +1478,7 @@ progress::-moz-progress-bar {
   gap: 25px;
   font-size: 11px;
   padding: 12px 0;
-  color: #c4b3d2;
+  color: #b6c0cf;
 }
 .fd-order-items strong {
   white-space: nowrap;
@@ -1491,8 +1491,8 @@ progress::-moz-progress-bar {
 }
 .fd-player {
   width: min(1160px, 100%);
-  background: #18151f;
-  border: 1px solid #4a3958;
+  background: #0d0d1a;
+  border: 1px solid #2d2e64;
   border-radius: 15px;
   max-height: calc(100dvh - 48px);
   overflow-y: auto;
@@ -1502,14 +1502,14 @@ progress::-moz-progress-bar {
   align-items: center;
   justify-content: space-between;
   padding: 18px 26px;
-  border-bottom: 1px solid #3a2e46;
+  border-bottom: 1px solid #242650;
 }
 .fd-tag {
   font-size: 8px;
   letter-spacing: 1.4px;
-  color: #baa1d0;
-  background: #31263e;
-  border: 1px solid #4b385a;
+  color: #8b92e6;
+  background: #171834;
+  border: 1px solid #2a2c68;
   padding: 5px 9px;
   border-radius: 5px;
 }
@@ -1537,16 +1537,16 @@ progress::-moz-progress-bar {
   height: 44px;
   display: grid;
   place-items: center;
-  color: #ead8ff;
-  background: #30213dba;
-  border: 1px solid #a37ec077;
+  color: #d9dcfe;
+  background: #121434ba;
+  border: 1px solid #616bdd77;
   border-radius: 10px;
   margin-bottom: 22px;
 }
 .fd-lesson-art > p {
   font-size: 9px;
   letter-spacing: 2px;
-  color: #e5d0f5;
+  color: #c7ccfe;
 }
 .fd-lesson-art h2 {
   font-family: var(--font-display);
@@ -1566,7 +1566,7 @@ progress::-moz-progress-bar {
 .fd-segmented {
   display: flex;
   gap: 20px;
-  border-bottom: 1px solid #3c2d48;
+  border-bottom: 1px solid #222453;
   margin: 22px 0;
 }
 .fd-segmented button {
@@ -1574,17 +1574,17 @@ progress::-moz-progress-bar {
   border: 0;
   border-bottom: 2px solid transparent;
   font-size: 11px;
-  color: #ae96bd;
+  color: #98a7bb;
   padding: 12px 0;
 }
 .fd-segmented button[aria-pressed="true"] {
-  color: #e0c3f5;
-  border-bottom-color: #c0a0e2;
+  color: #bbc0fd;
+  border-bottom-color: #8c95f6;
 }
 .fd-lesson-copy {
   font-size: 12px;
   line-height: 1.8;
-  color: #c5b4d2;
+  color: #b7c1cf;
   min-height: 230px;
 }
 .fd-lesson-copy h3 {
@@ -1604,8 +1604,8 @@ progress::-moz-progress-bar {
   padding: 4px 0;
 }
 .fd-lesson-sidebar {
-  background: #201a29;
-  border-left: 1px solid #3f2d4c;
+  background: #101122;
+  border-left: 1px solid #212258;
   padding: 28px 22px;
 }
 .fd-lesson-sidebar h3 {
@@ -1629,7 +1629,7 @@ progress::-moz-progress-bar {
   border: 1px solid transparent;
   padding: 15px 10px;
   border-radius: 7px;
-  color: #bba3ce;
+  color: #8b92e6;
   margin-top: 6px;
   font-size: 11px;
   line-height: 1.7;
@@ -1638,32 +1638,32 @@ progress::-moz-progress-bar {
   margin-top: 3px;
 }
 .fd-module.active {
-  border-color: #624975;
-  background: #34263f;
-  color: #e8ceff;
+  border-color: #373a87;
+  background: #171835;
+  color: #cfd3fe;
 }
 .fd-module small {
   display: block;
   font-size: 8px;
   letter-spacing: 1px;
-  color: #ad8ec0;
+  color: #95a4b9;
   margin-bottom: 4px;
 }
 .fd-notes {
   display: grid;
   gap: 10px;
   font-size: 12px;
-  color: #dfc5ef;
+  color: #b8befc;
 }
 .fd-notes span {
   font-size: 10px;
 }
 .fd-notes textarea {
   resize: vertical;
-  border: 1px solid #634773;
+  border: 1px solid #353885;
   border-radius: 8px;
-  color: #e6d3f5;
-  background: #211a2b;
+  color: #cacffe;
+  background: #101024;
   padding: 15px;
   font-size: 12px;
   min-height: 180px;
@@ -1674,7 +1674,7 @@ progress::-moz-progress-bar {
   gap: 15px;
   padding: 20px 0;
   min-height: 200px;
-  color: #cfb3e1;
+  color: #a5abef;
   flex-wrap: wrap;
 }
 .fd-resource strong {
@@ -1687,7 +1687,7 @@ progress::-moz-progress-bar {
   display: flex;
   justify-content: space-between;
   gap: 14px;
-  border-top: 1px solid #3f2d4a;
+  border-top: 1px solid #212356;
   padding-top: 22px;
   margin-top: 25px;
 }
@@ -1697,7 +1697,7 @@ progress::-moz-progress-bar {
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: #cbb4e6;
+  color: #a5acf5;
 }
 .fd-spin {
   animation: fd-spin 3s linear infinite;
@@ -1712,7 +1712,7 @@ progress::-moz-progress-bar {
   border: 0;
   display: grid;
   place-items: center;
-  color: #d2c2de;
+  color: #c7ced9;
   width: 34px;
   height: 34px;
 }
@@ -1724,8 +1724,8 @@ progress::-moz-progress-bar {
   top: -100px;
   left: 20px;
   z-index: 300;
-  background: #d7c2f7;
-  color: #241734;
+  background: var(--primary-purple);
+  color: var(--text-white);
   padding: 12px 20px;
   border-radius: 5px;
 }
@@ -1746,33 +1746,33 @@ progress::-moz-progress-bar {
   max-width: none !important;
 }
 .cx-hero {
-  background: linear-gradient(125deg, #292333, #1b1c24) !important;
-  border-color: #42354e !important;
+  background: linear-gradient(125deg, #15162c, #0f1020) !important;
+  border-color: #2b2c58 !important;
 }
 .cx-tabs {
   flex-wrap: wrap;
 }
 .cx-panel {
-  background: #1b1922 !important;
-  border-color: #3a3044 !important;
+  background: #0e0f1e !important;
+  border-color: #28294c !important;
 }
 .cx-page-footer {
   margin-top: 30px;
 }
 .cx-primary {
-  background: #c7b5fa !important;
-  color: #211739 !important;
-  border-color: #c7b5fa !important;
+  background: var(--primary-purple) !important;
+  color: var(--text-white) !important;
+  border-color: var(--primary-purple) !important;
 }
 .cx-stat {
-  background: #1b1922 !important;
-  border-color: #3a3044 !important;
+  background: #0e0f1e !important;
+  border-color: #28294c !important;
 }
 .cx-hero h1 {
   font-size: 36px !important;
 }
 .cx-section-kicker {
-  color: #bca3d4 !important;
+  color: #9097e7 !important;
 }
 .cx-heading-row {
   gap: 12px;
@@ -1788,7 +1788,7 @@ progress::-moz-progress-bar {
   max-height: none !important;
 }
 .cert-congrats-eyebrow {
-  color: #d9c4eb;
+  color: #b8bef7;
 }
 .cert-canvas-container {
   overflow: hidden;
@@ -1810,16 +1810,16 @@ progress::-moz-progress-bar {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: #141219;
+  background: #0a0b16;
 }
 .fd-auth-art {
   background:
-    radial-gradient(ellipse at 50% 55%, #65507655, transparent 55%), #24202d;
+    radial-gradient(ellipse at 50% 55%, #41438555, transparent 55%), #131327;
   padding: 45px 55px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid #42334a;
+  border-right: 1px solid #2a2b53;
   position: relative;
   overflow: hidden;
 }
@@ -1836,17 +1836,17 @@ progress::-moz-progress-bar {
   margin: 20px 0;
 }
 .fd-auth-art h1 span {
-  color: #c7b5fa;
+  color: var(--primary-purple);
 }
 .fd-auth-art p {
-  color: #bba6cb;
+  color: #aab6c7;
   font-size: 13px;
   line-height: 1.9;
   max-width: 330px;
 }
 .fd-auth-art > small {
   font-size: 10px;
-  color: #b89cc9;
+  color: #a3b0c2;
 }
 .fd-auth-form {
   display: flex;
@@ -1876,14 +1876,14 @@ progress::-moz-progress-bar {
   display: grid;
   gap: 8px;
   font-size: 11px;
-  color: #ceb8dd;
+  color: #a8aeed;
 }
 .fd-auth-form input {
-  border: 1px solid #4e395b;
+  border: 1px solid #2b2d69;
   border-radius: 7px;
-  background: #221a2b;
+  background: #101024;
   padding: 12px;
-  color: #f2e4ff;
+  color: #e5e7fe;
   min-width: 0;
 }
 .fd-auth-form .fd-primary {
@@ -1891,23 +1891,23 @@ progress::-moz-progress-bar {
 }
 .fd-auth-note {
   font-size: 10px;
-  color: #b39abe;
+  color: #9ba9bd;
   line-height: 1.8;
-  background: #231c2c;
+  background: #111225;
   padding: 14px;
-  border: 1px solid #46314f;
+  border: 1px solid #25275b;
   border-radius: 7px;
   margin: 22px 0;
 }
 .fd-auth-switch {
   font-size: 11px;
-  color: #b6a1c3;
+  color: #a3afc1;
   text-align: center;
   margin-top: 20px;
 }
 .fd-auth-switch button {
   font-size: 11px;
-  color: #d1b2ed;
+  color: #a2aafd;
   background: none;
   border: 0;
   text-decoration: underline;
@@ -1922,13 +1922,13 @@ progress::-moz-progress-bar {
 }
 .fd-home {
   min-height: 100vh;
-  background: #15121b;
+  background: #0b0b17;
 }
 .fd-home > header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #43334e;
+  border-bottom: 1px solid #282a59;
   padding: 24px 7%;
   gap: 20px;
 }
@@ -1946,11 +1946,11 @@ progress::-moz-progress-bar {
   margin: 22px 0;
 }
 .fd-home-main h1 span {
-  color: #c7b5fa;
+  color: var(--primary-purple);
 }
 .fd-home-main > p {
   font-size: 15px;
-  color: #baa7c9;
+  color: #aab6c6;
   line-height: 1.9;
   max-width: 540px;
 }
@@ -1966,12 +1966,12 @@ progress::-moz-progress-bar {
 }
 .fd-home-features > div {
   padding: 24px;
-  border: 1px solid #44324f;
+  border: 1px solid #26285b;
   border-radius: 12px;
-  background: #221a2a;
+  background: #101123;
 }
 .fd-home-features svg {
-  color: #c6a4e1;
+  color: #929af3;
 }
 .fd-home-features h2 {
   font-size: 16px;
@@ -1981,12 +1981,12 @@ progress::-moz-progress-bar {
 .fd-home-features p {
   font-size: 12px;
   line-height: 1.8;
-  color: #bba2cc;
+  color: #a9b5c5;
 }
 .fd-home-main > small {
   display: block;
   margin-top: 45px;
-  color: #987fab;
+  color: #8091aa;
   font-size: 10px;
   line-height: 1.8;
 }
@@ -2239,7 +2239,7 @@ progress::-moz-progress-bar {
     position: fixed;
     inset: 68px 0 0;
     border: 0;
-    background: #08060cbb;
+    background: #03030abb;
     z-index: 34;
   }
   .fd-main {
@@ -2273,7 +2273,7 @@ progress::-moz-progress-bar {
   }
   .fd-lesson-sidebar {
     border-left: 0;
-    border-top: 1px solid #42304f;
+    border-top: 1px solid #24255b;
   }
   .fd-lesson-sidebar .fd-module {
     width: 100%;
@@ -2743,7 +2743,7 @@ progress::-moz-progress-bar {
   .fd-auth-art {
     padding: 23px 24px;
     border-right: 0;
-    border-bottom: 1px solid #46334d;
+    border-bottom: 1px solid #292a57;
   }
   .fd-auth-art > div:nth-child(2),
   .fd-auth-art > small {

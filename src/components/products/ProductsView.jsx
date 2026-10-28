@@ -60,12 +60,12 @@ const imageFallback = (e) => {
   e.currentTarget.src = fallbackImage;
 };
 const categoryColors = {
-  "Motion Graphics": "#c3a5ff",
-  "3D & CGI": "#9fc5ff",
-  "UX/UI Design": "#e2c48e",
-  "Game Development": "#c0d4a8",
-  "Spatial Audio": "#9bd9ca",
-  "Digital Art": "#e5a9c5",
+  "Motion Graphics": "#c084fc",
+  "3D & CGI": "#38bdf8",
+  "UX/UI Design": "#fbbf24",
+  "Game Development": "#fb7185",
+  "Spatial Audio": "#34d399",
+  "Digital Art": "#f472b6",
 };
 
 function CourseImage({ course, className = "" }) {
@@ -457,7 +457,7 @@ export default function ProductsView({
       </div>
       <div className="fd-course-body">
         <div className="fd-course-topline">
-          <span style={{ color: categoryColors[c.category] || "#c2b5eb" }}>
+          <span style={{ color: categoryColors[c.category] || "#818cf8" }}>
             {c.category}
           </span>
           <span className="fd-rating">

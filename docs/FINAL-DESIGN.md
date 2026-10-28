@@ -4,7 +4,7 @@ Create.IT - IMY 320: Multimedia Trends, University of Pretoria, 2026.
 
 ## Design direction
 
-The final workspace keeps the established dark creative identity, with a softer lavender accent, restrained borders, consistent typography, and more space around the primary content. The orbital hero is drawn in CSS. Course photography provides a clear visual entry to each subject. The catalogue, learning dashboard, wishlist, cart, account hub, and certificates share navigation and interaction styles.
+The final workspace keeps the established dark creative identity, with the original indigo and cyan accents, restrained borders, consistent typography, and more space around the primary content. The orbital hero is drawn in CSS. Course photography provides a clear visual entry to each subject. The catalogue, learning dashboard, wishlist, cart, account hub, and certificates share navigation and interaction styles.
 
 The first action is now explicit: **Find your next course** moves focus to the course search. Categories remain available in one place, and advanced level/price options appear on request. This reduces the simultaneous competing controls identified by participants while preserving useful filtering.
 

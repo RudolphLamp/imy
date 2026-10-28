@@ -66,7 +66,7 @@ export default function CoursePlayerModal({
             <div
               className="fd-lesson-art"
               style={{
-                backgroundImage: `linear-gradient(0deg, #14151f, transparent), url(${course.image})`,
+                backgroundImage: `linear-gradient(0deg, #090a18, transparent), url(${course.image})`,
               }}
             >
               <span>
